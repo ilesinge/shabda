@@ -1,7 +1,7 @@
 DJMF
 ====
 
-A tool to fetch random samples based on given words, for use in impro sessions on instruments such as Tidal Cycles.
+A tool to fetch random samples from Freesound based on given words, for use in impro sessions on instruments such as Tidal Cycles.
 
 Install
 -------
