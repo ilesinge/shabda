@@ -1,5 +1,5 @@
-DJMF
-====
+Shabda
+======
 
 A tool to fetch random samples from https://freesound.org/ based on given words, for use in impro sessions on instruments such as Tidal Cycles.
 
@@ -14,10 +14,10 @@ Install
 Use
 ---
 
-Execute in terminal `python3 djmf_cli.py <word1> <word2> <...> --num <number_of_sample_per_word>`
+Execute in terminal `python3 shabda_cli.py <word1> <word2> <...> --num <number_of_sample_per_word>`
 
 ```
-python3 djmf_cli.py spaghetti monster --num 4
+python3 shabda_cli.py spaghetti monster --num 4
 ```
 
 Launch the web application:
@@ -25,7 +25,7 @@ Launch the web application:
 In debug mode:
 ```
 pipenv shell
-FLASK_APP=djmf FLASK_ENV=development flask run
+FLASK_APP=shabda FLASK_ENV=development flask run
 ```
 
 Scenario
@@ -49,7 +49,7 @@ To do
 -----
 
 - Remove Docker / Docker-compose if not needed ?
-- Djmf web for Estuary dynamic samples
+- Shabda web for Estuary dynamic samples
   - https://github.com/dktr0/estuary/wiki#adding-sound-files-to-estuarywebdirt-on-the-fly-early-august-2021
     - JSON + expose assets
   - URL: Preparatory screen

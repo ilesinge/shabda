@@ -1,6 +1,6 @@
 from pprint import pprint
 import asyncio
-from djmf.dj import Dj
+from shabda.dj import Dj
 
 
 from flask import Blueprint, app

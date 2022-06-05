@@ -6,17 +6,17 @@
 import argparse
 import asyncio
 
-from djmf.dj import Dj
+from shabda.dj import Dj
 
 
 async def main():
-    parser = argparse.ArgumentParser(description="Dawnlods som ear shiiz")
-    parser.add_argument("w00t", nargs="+", help="Waddyawant?")
+    parser = argparse.ArgumentParser(description="Dawnlods som ear stofu")
+    parser.add_argument("word", nargs="+", help="Waddyawant?")
     parser.add_argument("--num", type=int, default=5, nargs="?", help="Ow many?")
     args = parser.parse_args()
 
     dj = Dj()
-    for word in args.w00t:
+    for word in args.word:
         await dj.fetch(word, args.num)
 
     print("")

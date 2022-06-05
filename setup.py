@@ -1,10 +1,10 @@
 from setuptools import setup
 
 setup(
-    name="DJMF",
+    name="Shabda",
     version="1.0",
     long_description=__doc__,
-    packages=["djmf"],
+    packages=["shabda"],
     include_package_data=True,
     zip_safe=False,
 )

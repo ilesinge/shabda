@@ -12,8 +12,8 @@ import urllib
 import freesound
 import pydub
 from termcolor import colored
-from djmf.display import print_error
-from djmf.client import Client
+from shabda.display import print_error
+from shabda.client import Client
 
 
 class Dj:

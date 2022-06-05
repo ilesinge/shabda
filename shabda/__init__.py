@@ -1,5 +1,5 @@
 from flask import Flask
-from djmf.dj import Dj
+from shabda.dj import Dj
 
 
 def create_app():
