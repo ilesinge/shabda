@@ -1,4 +1,0 @@
-git+https://github.com/MTG/freesound-python.git
-pydub
-termcolor
-requests

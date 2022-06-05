@@ -6,17 +6,26 @@ A tool to fetch random samples based on given words, for use in impro sessions o
 Install
 -------
 
-- Install Python (2 and 3 are supported): https://www.python.org/
+- Install Python 3: https://www.python.org/
 - Install pip: https://pypi.org/project/pip/
-- Install dependencies: `pip install -r requirements.txt`
+- Install pipenv: `pip install pipenv`
+- Install dependencies: `pipenv install`
 
 Use
 ---
 
-Execute in terminal `python DJMF.py <word1> <word2> <...> --num <number_of_sample_per_word>`
+Execute in terminal `python3 djmf_cli.py <word1> <word2> <...> --num <number_of_sample_per_word>`
 
 ```
-python DJMF.py spaghetti monster --num 4
+python3 djmf_cli.py spaghetti monster --num 4
+```
+
+Launch the web application:
+
+In debug mode:
+```
+pipenv shell
+FLASK_APP=djmf FLASK_ENV=development flask run
 ```
 
 Scenario
@@ -39,6 +48,31 @@ Scenario
 To do
 -----
 
+- Remove Docker / Docker-compose if not needed ?
+- Djmf web for Estuary dynamic samples
+  - https://github.com/dktr0/estuary/wiki#adding-sound-files-to-estuarywebdirt-on-the-fly-early-august-2021
+    - JSON + expose assets
+  - URL: Preparatory screen
+  - Number of samples in query definition
+  - Finetune: length, etc.
+  - URL: JSON (check only downloaded resources)
+  - URL: JSON + download missing resources (fresh=1?)
+  - Solidify: Retry, Queue workers, queue status ?
+    - https://huey.readthedocs.io/en/latest/index.html
+    - https://github.com/litements/litequeue
+    - (but with those there is no way to know a queue's status ?)
+  - Serve assets
+  - Host on free service: separate code from assets
+  - Change name
+  - Beware Throttling: https://freesound.org/docs/api/overview.html
+- Download as zip
+- Random word from dictionary
 - Normalize samples volume
+    - How to normalize sound:
+    - peak_amplitude = sound.max
+    - sound_gain_6db = sound + 6
+    - https://www.pydoc.io/pypi/pydub-0.9.5/autoapi/effects/index.html
+    - https://github.com/jiaaro/pydub/issues/90
+    - https://stackoverflow.com/questions/42492246/how-to-normalize-the-volume-of-an-audio-file-in-python-any-packages-currently-a/42496373
 - Use advanced search in a funky way: https://freesound.org/docs/api/analysis_docs.html#analysis-docs
-- ???
+- record your voice
