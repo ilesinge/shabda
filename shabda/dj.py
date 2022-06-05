@@ -8,6 +8,7 @@ import random
 import os
 import asyncio
 import urllib
+from glob import glob
 
 import freesound
 import pydub
@@ -23,6 +24,13 @@ class Dj:
 
     def __init__(self):
         self.client = Client()
+
+    def list(self, word, max):
+        word_dir = "samples/" + word
+        filenames = []
+        if os.path.exists(word_dir):
+            filenames = filenames + glob(word_dir + "/*.wav")
+        return filenames
 
     async def fetch(self, word, num):
         word_dir = "samples/" + word
