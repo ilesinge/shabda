@@ -55,6 +55,6 @@ def parse_definition(definition):
         if len(parts) > 1:
             number = int(parts[1])
         else:
-            number = 5
+            number = 1
         words[word] = number
     return words
