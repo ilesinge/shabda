@@ -1,9 +1,7 @@
 import asyncio
 from shabda.dj import Dj
-from flask import jsonify, send_from_directory
-
-
-from flask import Blueprint, app
+from flask import Blueprint, jsonify, send_from_directory, request
+from urllib.parse import urlparse
 
 bp = Blueprint("web", __name__, url_prefix="/")
 
@@ -25,19 +23,32 @@ async def pack(definition):
     return f"Pack {definition} downloaded!"
 
 
-@bp.route("/pack/<definition>.json")
+@bp.route("/<definition>.json")
 async def pack_json(definition):
+    url = urlparse(request.base_url)
+    base = url.scheme + "://" + url.hostname
+    if url.port:
+        base += ":" + str(url.port)
     words = parse_definition(definition)
-    samples = []
-    for word, number in words.items():
-        samples = samples + dj.list(word, number)
     reslist = []
-    for sample in samples:
-        reslist.append({"url": "", "type": "audio", "bank": "", "n": ""})
+    for word, number in words.items():
+        samples = dj.list(word, number)
+        n = 0
+        for sample in samples:
+            reslist.append(
+                {
+                    "url": sample,
+                    "type": "audio",
+                    "bank": word,
+                    "n": n,
+                }
+            )
+            n += 1
+
     return jsonify(reslist)
 
 
-@bp.route("/sample/<path:path>")
+@bp.route("/samples/<path:path>")
 def sample(path):
     return send_from_directory("../samples/", path, as_attachment=False)
 
