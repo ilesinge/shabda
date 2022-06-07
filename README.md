@@ -25,8 +25,7 @@ Launch the web application:
 
 In debug mode:
 ```
-pipenv shell
-FLASK_APP=shabda FLASK_ENV=development flask run
+FLASK_APP=shabda FLASK_ENV=development pipenv run flask run
 ```
 
 Scenario
