@@ -10,6 +10,7 @@ Install
 - Install pip: https://pypi.org/project/pip/
 - Install pipenv: `pip install pipenv`
 - Install dependencies: `pipenv install`
+- Install ffmpeg: https://ffmpeg.org/
 
 Use
 ---
@@ -54,17 +55,23 @@ To do
     - JSON + expose assets
   - URL: Preparatory screen
   - Number of samples in query definition
-  - Finetune: length, etc.
+  - Finetune query:
+    - duration, etc. (filter not working)
+    - number of results
+  - Put in production
   - URL: JSON (check only downloaded resources)
   - URL: JSON + download missing resources (fresh=1?)
-  - Solidify: Retry, Queue workers, queue status ?
+    - Store a cache file containing sample ids?
+  - Solidify: Retry, Queue workers, queue status?
     - https://huey.readthedocs.io/en/latest/index.html
     - https://github.com/litements/litequeue
-    - (but with those there is no way to know a queue's status ?)
+    - (but with those there is no way to know a queue's status?)
+  - Prevent overwriting if pack already exists (allow force param?)
   - Serve assets
-  - Host on free service: separate code from assets
+  - Host on free service?: separate code from assets
   - Change name
   - Beware Throttling: https://freesound.org/docs/api/overview.html
+  - Communicate on Estuary Discord
 - Download as zip
 - Random word from dictionary
 - Normalize samples volume
