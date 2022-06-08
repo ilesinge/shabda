@@ -48,15 +48,20 @@ Scenario
 To do
 -----
 
-- Remove Docker / Docker-compose if not needed ?
+- Remove Docker / Docker-compose if not needed ? Or only for codespace ?
 - Shabda web for Estuary dynamic samples
   - https://github.com/dktr0/estuary/wiki#adding-sound-files-to-estuarywebdirt-on-the-fly-early-august-2021
     - JSON + expose assets
   - URL: Preparatory screen
-  - Number of samples in query definition
   - Finetune query:
-    - duration, etc. (filter not working)
-    - number of results
+    - https://freesound.org/docs/api/resources_apiv2.html#sound-text-search
+    - https://freesound.org/docs/api/resources_apiv2.html#sound-content-search
+    - https://freesound.org/docs/api/resources_apiv2.html#combined-search
+    - duration, etc.
+      - To include duration filter in similar search, see https://freesound.org/docs/api/resources_apiv2.html#request-parameters-1
+    - prevent downloading long samples
+    - change allowed duration in definition ?    
+    - total number of results
   - Put in production
   - URL: JSON (check only downloaded resources)
   - URL: JSON + download missing resources (fresh=1?)

@@ -44,7 +44,11 @@ class Dj:
         results = await loop.run_in_executor(
             None,
             partial(
-                self.client.text_search, query=word, field="id,name,type", page_size=100
+                self.client.text_search,
+                query=word,
+                fields="id,name,type,duration,previews",
+                page_size=10,
+                filter="duration:[* TO 1]",
             ),
         )
 
@@ -55,7 +59,8 @@ class Dj:
             sound = results[key]
             try:
                 similar = sound.get_similar(
-                    fields="id,name,type,previews", page_size=100
+                    fields="id,name,type,duration,previews",
+                    page_size=100,
                 )
             except freesound.FreesoundException as e:
                 if e.code == 404:
