@@ -9,6 +9,7 @@ pydub = "*"
 termcolor = "*"
 requests = "*"
 "flask[async]" = "*"
+gunicorn = "*"
 
 [dev-packages]
 
