@@ -2,3 +2,4 @@ token_data
 .vscode
 shabda.code-workspace
 __pycache__
+ansible/
