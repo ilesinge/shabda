@@ -57,8 +57,8 @@ To do
 - Remove Docker / Docker-compose if not needed ? Or only for codespace ?
 - Shabda web for Estuary dynamic samples
   - https://github.com/dktr0/estuary/wiki#adding-sound-files-to-estuarywebdirt-on-the-fly-early-august-2021
-    - JSON + expose assets
   - URL: Preparatory screen
+    - Vue or Svelte frontend
   - Finetune query:
     - https://freesound.org/docs/api/resources_apiv2.html#sound-text-search
     - https://freesound.org/docs/api/resources_apiv2.html#sound-content-search
@@ -71,6 +71,8 @@ To do
   - URL: JSON (check only downloaded resources)
   - URL: JSON + download missing resources (fresh=1?)
     - Store a cache file containing sample ids?
+  - List API
+  - Security: have an upper limit on the number of samples
   - Solidify: Retry, Queue workers, queue status?
     - https://huey.readthedocs.io/en/latest/index.html
     - https://github.com/litements/litequeue
