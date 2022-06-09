@@ -53,6 +53,10 @@ class Dj:
         )
 
         result_number = len(results.results)
+        if result_number == 0:
+            print_error("No found samples.")
+            return
+
         similar = None
         while not similar:
             key = random.randint(0, result_number - 1)
