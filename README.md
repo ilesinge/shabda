@@ -68,11 +68,6 @@ To do
     - prevent downloading long samples
     - change allowed duration in definition ?    
     - total number of results
-  - Put in production:
-    - https://www.digitalocean.com/community/tutorials/how-to-serve-flask-applications-with-gunicorn-and-nginx-on-ubuntu-20-04-fr
-    - https://medium.com/ymedialabs-innovation/deploy-flask-app-with-nginx-using-gunicorn-and-supervisor-d7a93aa07c18
-    - https://gunicorn.org/
-    - https://flask.palletsprojects.com/en/2.1.x/deploying/uwsgi/
   - URL: JSON (check only downloaded resources)
   - URL: JSON + download missing resources (fresh=1?)
     - Store a cache file containing sample ids?
@@ -83,9 +78,9 @@ To do
   - Prevent overwriting if pack already exists (allow force param?)
   - Serve assets
   - Host on free service?: separate code from assets
-  - Change name
   - Beware Throttling: https://freesound.org/docs/api/overview.html
   - Communicate on Estuary Discord
+- What if no found sample ? => random sound ? other ?
 - Download as zip
 - Random word from dictionary
 - Normalize samples volume
