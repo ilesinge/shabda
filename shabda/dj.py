@@ -52,15 +52,16 @@ class Dj:
             ),
         )
 
-        result_number = len(results.results)
-        if result_number == 0:
+        if len(results.results) == 0:
             print_error("No found samples.")
             return
 
         similar = None
         while not similar:
-            key = random.randint(0, result_number - 1)
+            key = random.randint(0, len(results.results) - 1)
             sound = results[key]
+            name = sound.name
+            print("Sound found: " + name)
             try:
                 similar = sound.get_similar(
                     fields="id,name,type,duration,previews",
@@ -73,33 +74,30 @@ class Dj:
                 else:
                     print_error("Error while getting similar sounds", e)
                     raise e
-        name = sound.name
-        print("Sound found: " + name)
-        result_number = len(similar.results)
-        keys = []
-        while len(keys) < num:
-            key = random.randint(0, result_number - 1)
-            if key in keys:
+
+        ssounds = []
+        for result in similar:
+            if len(ssounds) >= num:
+                break
+            if result.id == sound.id:
                 continue
-            keys.append(key)
+            if result.duration > 5:
+                continue
+            ssounds.append(result)
 
         # Define random common duration for word samples
         sample_duration = random.randint(200, 5000)
         print("Random sample duration: " + str(sample_duration) + "ms")
         sample_num = 0
         tasks = []
-        for key in keys:
-            tasks.append(
-                self.download(word_dir, similar, key, sample_duration, sample_num)
-            )
+        for ssound in ssounds:
+            tasks.append(self.download(word_dir, ssound, sample_duration, sample_num))
             sample_num += 1
         await asyncio.gather(*tasks)
 
-    async def download(self, word_dir, similar, key, sample_duration, sample_num):
+    async def download(self, word_dir, ssound, sample_duration, sample_num):
         try:
-            ssound = similar[key]
-            ssound_name = ssound.name
-            source_name = ssound_name + "-source"
+            source_name = ssound.name + "-source"
             source_path = word_dir + "/" + source_name
             print("Dowloading " + word_dir + " sample #" + str(sample_num) + "...")
             loop = asyncio.get_event_loop()
