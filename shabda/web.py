@@ -24,7 +24,7 @@ async def pack(definition):
 
 
 @bp.route("/<definition>.json")
-async def pack_json(definition):
+def pack_json(definition):
     url = urlparse(request.base_url)
     base = url.scheme + "://" + url.hostname
     if url.port:
