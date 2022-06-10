@@ -64,7 +64,7 @@ class Dj:
             try:
                 similar = sound.get_similar(
                     fields="id,name,type,duration,previews",
-                    page_size=100,
+                    page_size=50,
                 )
             except freesound.FreesoundException as e:
                 if e.code == 404:
