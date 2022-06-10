@@ -53,6 +53,12 @@ def sample(path):
     return send_from_directory("../samples/", path, as_attachment=False)
 
 
+@bp.after_request
+def cors_after(response):
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    return response
+
+
 async def fetch_one(word, number):
     await dj.fetch(word, number)
 
