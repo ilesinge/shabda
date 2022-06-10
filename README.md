@@ -12,7 +12,7 @@ Install
 - Install pip: https://pypi.org/project/pip/
 - Install pipenv: `pip install pipenv`
 - Install dependencies: `pipenv install`
-- Install ffmpeg: https://ffmpeg.org/
+- Install ffmpeg: https://ffmpeg.org/ (e.g. Debian/Ubuntu: `apt install ffmpeg`)
 
 Use
 ---
@@ -54,11 +54,12 @@ Scenario
 To do
 -----
 
-- Remove Docker / Docker-compose if not needed ? Or only for codespace ?
+- Explain how to launch on codespace / test if available publicly
 - Shabda web for Estuary dynamic samples
   - https://github.com/dktr0/estuary/wiki#adding-sound-files-to-estuarywebdirt-on-the-fly-early-august-2021
   - URL: Preparatory screen
     - Vue or Svelte frontend
+  - Why do some samples don't work ? see https://shabda.ndre.gr/lol:2.json
   - Finetune query:
     - https://freesound.org/docs/api/resources_apiv2.html#sound-text-search
     - https://freesound.org/docs/api/resources_apiv2.html#sound-content-search
