@@ -97,7 +97,7 @@ class Dj:
 
     async def download(self, word_dir, ssound, sample_duration, sample_num):
         try:
-            source_name = ssound.name + "-source"
+            source_name = str(sample_num) + "-source"
             source_path = word_dir + "/" + source_name
             print("Dowloading " + word_dir + " sample #" + str(sample_num) + "...")
             loop = asyncio.get_event_loop()
