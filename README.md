@@ -71,6 +71,8 @@ To do
   - URL: JSON + download missing resources (fresh=1?)
     - Store a cache file containing sample ids?
   - List API and view
+  - Delete folder if empty
+    - show error
   - JSON: if no sample number, put all samples
   - Security: have an upper limit on the number of samples
   - Solidify: Retry, Queue workers, queue status?
@@ -82,6 +84,7 @@ To do
   - Host on free service?: separate code from assets
   - Beware Throttling: https://freesound.org/docs/api/overview.html
   - Communicate on Estuary Discord
+  - Deploy on Heroku ? Vercel ?
 - What if no found sample ? =>
   - random sound ? other ?
   - error on web ?
