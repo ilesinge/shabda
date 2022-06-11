@@ -1,9 +1,12 @@
+"""Shabda web routes"""
+
 import asyncio
-from shabda.dj import Dj
-from flask import Blueprint, jsonify, send_from_directory, request, render_template
-from werkzeug.exceptions import BadRequest, HTTPException
 from urllib.parse import urlparse
 import json
+from flask import Blueprint, jsonify, send_from_directory, request, render_template
+from werkzeug.exceptions import BadRequest, HTTPException
+from shabda.dj import Dj
+
 
 bp = Blueprint("web", __name__, url_prefix="/")
 
@@ -12,14 +15,17 @@ dj = Dj()
 
 @bp.route("/")
 def home():
+    """Main page"""
     return render_template("home.html")
 
 
 @bp.route("/pack/<definition>")
 async def pack(definition):
+    """Retrieve a pack of samples"""
     tasks = []
     words = parse_definition(definition)
     for word, number in words.items():
+        # if number is Nil, put 1
         tasks.append(fetch_one(word, number))
     await asyncio.gather(*tasks)
     return jsonify(
@@ -32,6 +38,7 @@ async def pack(definition):
 
 @bp.route("/<definition>.json")
 def pack_json(definition):
+    """Download a reslist definition"""
     url = urlparse(request.base_url)
     base = url.scheme + "://" + url.hostname
     if url.port:
@@ -40,42 +47,44 @@ def pack_json(definition):
     reslist = []
     for word, number in words.items():
         samples = dj.list(word, number)
-        n = 0
+        sample_num = 0
         for sampleurl in samples:
             reslist.append(
                 {
                     "url": sampleurl,
                     "type": "audio",
                     "bank": word,
-                    "n": n,
+                    "n": sample_num,
                 }
             )
-            n += 1
+            sample_num += 1
 
     return jsonify(reslist)
 
 
 @bp.route("/samples/<path:path>")
 def sample(path):
+    """Serve a sample"""
     return send_from_directory("../samples/", path, as_attachment=False)
 
 
 @bp.route("/assets/<path:path>")
 def static(path):
+    """Serve a static asset"""
     return send_from_directory("../assets/", path, as_attachment=False)
 
 
 @bp.errorhandler(HTTPException)
-def handle_exception(e):
+def handle_exception(exception):
     """Return JSON instead of HTML for HTTP errors."""
     # start with the correct headers and status code from the error
-    response = e.get_response()
+    response = exception.get_response()
     # replace the body with JSON
     response.data = json.dumps(
         {
-            "code": e.code,
-            "name": e.name,
-            "description": e.description,
+            "code": exception.code,
+            "name": exception.name,
+            "description": exception.description,
         }
     )
     response.content_type = "application/json"
@@ -84,16 +93,20 @@ def handle_exception(e):
 
 @bp.after_request
 def cors_after(response):
+    """Add CORS headers to response"""
     response.headers["Access-Control-Allow-Origin"] = "*"
     return response
 
 
 async def fetch_one(word, number):
+    """Fetch a single sample set"""
     await dj.fetch(word, number)
 
 
 def parse_definition(definition):
+    """Parse a pack definition"""
     words = {}
+    print(definition)
     sections = definition.split(",")
     for section in sections:
         parts = section.split(":")
@@ -101,11 +114,14 @@ def parse_definition(definition):
         if len(word) == 0:
             raise BadRequest("A sample name is required")
         number = 1
+        # put Nil in place of 1 if not specified
         if len(parts) > 1:
             try:
                 number = int(parts[1])
-            except ValueError:
-                raise BadRequest("A valid sample number is required after the colon")
+            except ValueError as exception:
+                raise BadRequest(
+                    "A valid sample number is required after the colon"
+                ) from exception
             if number < 1:
                 raise BadRequest("A sample number must be greater than 0")
             if number > 10:

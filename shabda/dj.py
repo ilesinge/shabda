@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""This module does blah blah."""
+"""Shabda engine"""
 
 from functools import partial
 import random
@@ -18,7 +18,7 @@ from shabda.client import Client
 
 
 class Dj:
-    """This class does blah blah."""
+    """Shabda engine"""
 
     client = None
 
@@ -26,13 +26,16 @@ class Dj:
         self.client = Client()
 
     def list(self, word, max_number):
+        """List files for a sample name"""
+        # accept Nil as a max_number
         word_dir = "samples/" + word
         filenames = []
         if os.path.exists(word_dir):
             filenames = filenames + glob(word_dir + "/*.wav")
-        return filenames
+        return filenames[0:max_number]
 
     async def fetch(self, word, num):
+        """Fetch a collection of samples"""
         word_dir = "samples/" + word
         if not os.path.exists(word_dir):
             os.makedirs(word_dir)
@@ -67,13 +70,13 @@ class Dj:
                     fields="id,name,type,duration,previews",
                     page_size=50,
                 )
-            except freesound.FreesoundException as e:
-                if e.code == 404:
+            except freesound.FreesoundException as exception:
+                if exception.code == 404:
                     print_error("Missing sound, continue")
                     continue
                 else:
-                    print_error("Error while getting similar sounds", e)
-                    raise e
+                    print_error("Error while getting similar sounds", exception)
+                    raise exception
 
         ssounds = []
         for result in similar:
@@ -96,6 +99,7 @@ class Dj:
         await asyncio.gather(*tasks)
 
     async def download(self, word_dir, ssound, sample_duration, sample_num):
+        """Download a sample"""
         try:
             source_name = str(sample_num) + "-source"
             source_path = word_dir + "/" + source_name
@@ -110,11 +114,11 @@ class Dj:
             sound = sound[begin : begin + sample_duration]  # random cut
             sound.export(word_dir + "/" + export_name, format="wav")
             print("Sample " + word_dir + "#" + str(sample_num) + " downloaded!")
-        except pydub.exceptions.CouldntDecodeError as e:
-            print_error("Error while decoding source file", e)
-        except freesound.FreesoundException as e:
-            print_error("Error while downloading sound", e)
-        except urllib.error.ContentTooShortError as e:
-            print_error("Content to short", e)
+        except pydub.exceptions.CouldntDecodeError as exception:
+            print_error("Error while decoding source file", exception)
+        except freesound.FreesoundException as exception:
+            print_error("Error while downloading sound", exception)
+        except urllib.error.ContentTooShortError as exception:
+            print_error("Content to short", exception)
         if os.path.exists(source_path):
             os.remove(source_path)

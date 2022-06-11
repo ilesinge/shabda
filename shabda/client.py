@@ -1,11 +1,15 @@
+"""Freesound client"""
 import json
-import freesound
 import webbrowser
 import requests
+import freesound
+
 from termcolor import colored
 
 
 class Client:
+    """Freesound client"""
+
     FS_CLIENT_ID = "vPkOlpykBDA4fU9fzGmE"
     token_data = {}
     client = None
@@ -62,8 +66,8 @@ class Client:
         try:
             user = freesound.FSRequest.request(uri, None, self.client, freesound.User)
             print("Logged in as " + user.username)
-        except freesound.FreesoundException as e:
-            if e.code == 401:
+        except freesound.FreesoundException as exception:
+            if exception.code == 401:
                 url = "https://freesound.org/apiv2/oauth2/access_token/"
                 params = {
                     "client_id": self.FS_CLIENT_ID,
@@ -79,9 +83,9 @@ class Client:
                 else:
                     raise Exception(
                         "An error occured while refreshing access token.", response
-                    )
+                    ) from exception
             else:
-                raise e
+                raise exception
 
     def __getattr__(self, attr):
         def wrapped_method(*args, **kwargs):

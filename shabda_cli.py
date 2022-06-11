@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-"""This CLI does blah blah."""
+"""Shabda command line interface"""
 
 import argparse
 import asyncio
@@ -10,6 +10,7 @@ from shabda.dj import Dj
 
 
 async def main():
+    """CLI router"""
     parser = argparse.ArgumentParser(description="Dawnlods som ear stofu")
     parser.add_argument("word", nargs="+", help="Waddyawant?")
     parser.add_argument("--num", type=int, default=5, nargs="?", help="Ow many?")
