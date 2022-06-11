@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Shabda</title>
+    <style>
+        body {
+            background-color: #b4fccc;
+            color: #110072;
+            font-family: sans-serif;
+            padding: 50px;
+        }
+
+        input {
+            border: 2px dotted #110072;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px;
+            background-color: transparent;
+            color: #110072;
+        }
+
+        input:focus {
+            outline: none;
+            border: 2px solid #110072;
+        }
+
+        button {
+            border: 2px solid #110072;
+            border-radius: 5px;
+            box-shadow: 3px 3px 2px #110072;
+            padding: 10px;
+            margin: 10px;
+            color: #110072;
+            cursor: pointer;
+        }
+
+        button:active {
+            transform: translate(2px, 2px);
+            box-shadow: 1px 1px 2px #110072;
+        }
+
+        .pack {
+            padding: 10px;
+        }
+    </style>
+
+</head>
+
+<body>
+    <script src="assets/mithril.min.js"></script>
+
+    <script>
+        var root = document.body
+
+        var State = {
+            pack: "",
+            progress: false,
+            lastretrieved: "",
+            error: "",
+
+            lastretrievedreslist: function () {
+                return this.lastretrieved + ".json"
+            },
+
+            lastreslist: function () {
+                return '!reslist "' + location.href + State.lastretrievedreslist() + '"'
+            },
+
+            retrieve: function () {
+                if (State.pack) {
+                    State.error = ""
+                    State.progress = true
+                    m.request({
+                        method: "GET",
+                        url: "/pack/" + State.pack
+                    })
+                        .then(function (result) {
+                            State.lastretrieved = result.definition
+                            State.progress = false
+                        })
+                }
+                else {
+                    State.error = "Please enter a pack definition"
+                }
+            }
+        }
+
+        var Shabda = {
+            view: function () {
+                return m("main", [
+                    m("h1", "Shabda"),
+
+                    m("div",
+                        m("input[placeholder=Pack definition]", {
+                            value: State.pack,
+                            oninput: function (e) { State.pack = e.target.value },
+                            onkeyup: function (e) {
+                                if (e.keyCode == 13) {
+                                    State.retrieve()
+                                }
+                            }
+                        }),
+                        m("button", {
+                            onclick: State.retrieve
+                        }, "Fetch pack"),
+                        m("span.error", State.error),
+                        m("div", [
+                            m("h2", "Pack"),
+                            m("div.pack",
+                                State.progress ?
+                                    m("img", { src: "assets/infinity.svg" }) :
+                                    State.lastretrieved ? m("span", State.lastreslist()) : ""
+                            )
+                        ]),
+                    )
+                ])
+            }
+        }
+        m.mount(root, Shabda)
+
+    </script>
+</body>
+
+</html>

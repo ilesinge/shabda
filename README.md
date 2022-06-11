@@ -57,8 +57,6 @@ To do
 - Explain how to launch on codespace / how to make port public
 - Shabda web for Estuary dynamic samples
   - https://github.com/dktr0/estuary/wiki#adding-sound-files-to-estuarywebdirt-on-the-fly-early-august-2021
-  - URL: Preparatory screen
-    - Vue or Svelte frontend
   - Why do some samples don't work ? see https://shabda.ndre.gr/lol:2.json
   - Finetune query:
     - https://freesound.org/docs/api/resources_apiv2.html#sound-text-search
@@ -72,7 +70,8 @@ To do
   - URL: JSON (check only downloaded resources)
   - URL: JSON + download missing resources (fresh=1?)
     - Store a cache file containing sample ids?
-  - List API
+  - List API and view
+  - JSON: if no sample number, put all samples
   - Security: have an upper limit on the number of samples
   - Solidify: Retry, Queue workers, queue status?
     - https://huey.readthedocs.io/en/latest/index.html
@@ -83,7 +82,9 @@ To do
   - Host on free service?: separate code from assets
   - Beware Throttling: https://freesound.org/docs/api/overview.html
   - Communicate on Estuary Discord
-- What if no found sample ? => random sound ? other ?
+- What if no found sample ? =>
+  - random sound ? other ?
+  - error on web ?
 - Download as zip
 - Random word from dictionary
 - Normalize samples volume
