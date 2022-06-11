@@ -25,20 +25,23 @@
 				"python.linting.enabled": true,
 				"python.linting.pylintEnabled": true,
 				"python.formatting.autopep8Path": "/usr/local/py-utils/bin/autopep8",
-				"python.formatting.blackPath": "/usr/local/py-utils/bin/black",
+				"python.formatting.blackPath": "black",
 				"python.formatting.yapfPath": "/usr/local/py-utils/bin/yapf",
 				"python.linting.banditPath": "/usr/local/py-utils/bin/bandit",
 				"python.linting.flake8Path": "/usr/local/py-utils/bin/flake8",
 				"python.linting.mypyPath": "/usr/local/py-utils/bin/mypy",
 				"python.linting.pycodestylePath": "/usr/local/py-utils/bin/pycodestyle",
 				"python.linting.pydocstylePath": "/usr/local/py-utils/bin/pydocstyle",
-				"python.linting.pylintPath": "/usr/local/py-utils/bin/pylint"
+				"python.linting.pylintPath": "pylint",
+				"python.formatting.provider": "black",
+				"workbench.colorTheme": "Visual Studio Dark"
 			},
 			
 			// Add the IDs of extensions you want installed when the container is created.
 			"extensions": [
 				"ms-python.python",
-				"ms-python.vscode-pylance"
+				"ms-python.vscode-pylance",
+				"sukumo28.wav-preview"
 			]
 		}
 	},
@@ -47,13 +50,16 @@
 	// "forwardPorts": [],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "pipenv install",
+	"postCreateCommand": "pipenv install --dev",
 
 	// Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
 	"remoteUser": "vscode",
 	"portsAttributes": {
 		"5000": {
 			"label": "shabda"
+		},
+		"8000": {
+			"label": "gunicorn"
 		}
 	}
 }
