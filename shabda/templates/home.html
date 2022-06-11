@@ -73,7 +73,7 @@
                     State.progress = true
                     m.request({
                         method: "GET",
-                        url: "/pack/" + State.pack
+                        url: "/pack/" + encodeURIComponent(State.pack)
                     })
                         .then(function (result) {
                             State.lastretrieved = result.definition
