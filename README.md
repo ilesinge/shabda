@@ -54,7 +54,7 @@ Scenario
 To do
 -----
 
-- Explain how to launch on codespace / test if available publicly
+- Explain how to launch on codespace / how to make port public
 - Shabda web for Estuary dynamic samples
   - https://github.com/dktr0/estuary/wiki#adding-sound-files-to-estuarywebdirt-on-the-fly-early-august-2021
   - URL: Preparatory screen
