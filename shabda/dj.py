@@ -25,7 +25,7 @@ class Dj:
     def __init__(self):
         self.client = Client()
 
-    def list(self, word, max):
+    def list(self, word, max_number):
         word_dir = "samples/" + word
         filenames = []
         if os.path.exists(word_dir):

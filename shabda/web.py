@@ -39,10 +39,10 @@ def pack_json(definition):
     for word, number in words.items():
         samples = dj.list(word, number)
         n = 0
-        for sample in samples:
+        for sampleurl in samples:
             reslist.append(
                 {
-                    "url": sample,
+                    "url": sampleurl,
                     "type": "audio",
                     "bank": word,
                     "n": n,
