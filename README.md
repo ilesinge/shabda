@@ -73,8 +73,6 @@ To do
   - List API and view
   - Delete folder if empty
     - show error
-  - JSON: if no sample number, put all samples
-  - Security: have an upper limit on the number of samples
   - Solidify: Retry, Queue workers, queue status?
     - https://huey.readthedocs.io/en/latest/index.html
     - https://github.com/litements/litequeue

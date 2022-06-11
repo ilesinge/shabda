@@ -25,7 +25,8 @@ async def pack(definition):
     tasks = []
     words = parse_definition(definition)
     for word, number in words.items():
-        # if number is Nil, put 1
+        if number is None:
+            number = 1
         tasks.append(fetch_one(word, number))
     await asyncio.gather(*tasks)
     return jsonify(
@@ -113,8 +114,7 @@ def parse_definition(definition):
         word = parts[0]
         if len(word) == 0:
             raise BadRequest("A sample name is required")
-        number = 1
-        # put Nil in place of 1 if not specified
+        number = None
         if len(parts) > 1:
             try:
                 number = int(parts[1])

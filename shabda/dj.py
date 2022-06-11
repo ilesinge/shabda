@@ -32,7 +32,9 @@ class Dj:
         filenames = []
         if os.path.exists(word_dir):
             filenames = filenames + glob(word_dir + "/*.wav")
-        return filenames[0:max_number]
+        if max_number is not None:
+            filenames = filenames[0:max_number]
+        return filenames
 
     async def fetch(self, word, num):
         """Fetch a collection of samples"""
