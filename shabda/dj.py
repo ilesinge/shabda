@@ -36,7 +36,8 @@ class Dj:
         sampleset = SampleSet(word)
 
         existing_samples = sampleset.list(num)
-        if len(existing_samples) >= num:
+        existing_number = len(existing_samples)
+        if existing_number >= num:
             return True
 
         master_id = sampleset.master_id
@@ -65,7 +66,7 @@ class Dj:
 
         ssounds = []
         for result in similar:
-            if len(existing_samples) >= num:
+            if existing_number >= num:
                 break
             if result.id == sound.id:
                 continue
@@ -74,7 +75,7 @@ class Dj:
             if result.id in sampleset.sounds:
                 continue
             ssounds.append(result)
-            existing_samples.append(result.id)
+            existing_number += 1
 
         # Define random common duration for word samples
         sample_duration = random.randint(200, 5000)
