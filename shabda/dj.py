@@ -8,13 +8,13 @@ import random
 import os
 import asyncio
 import urllib
-from glob import glob
 
 import freesound
 import pydub
 from termcolor import colored
 from shabda.display import print_error
 from shabda.client import Client
+from shabda.sampleset import SampleSet
 
 
 class Dj:
@@ -25,22 +25,77 @@ class Dj:
     def __init__(self):
         self.client = Client()
 
-    def list(self, word, max_number):
+    def list(self, word, max_number=None):
         """List files for a sample name"""
-        # accept Nil as a max_number
-        word_dir = "samples/" + word
-        filenames = []
-        if os.path.exists(word_dir):
-            filenames = filenames + glob(word_dir + "/*.wav")
-        if max_number is not None:
-            filenames = filenames[0:max_number]
-        return filenames
+        sampleset = SampleSet(word)
+        return sampleset.list(max_number)
 
     async def fetch(self, word, num):
         """Fetch a collection of samples"""
-        word_dir = "samples/" + word
-        if not os.path.exists(word_dir):
-            os.makedirs(word_dir)
+        sound = None
+        sampleset = SampleSet(word)
+
+        existing_samples = sampleset.list(num)
+        if len(existing_samples) >= num:
+            return True
+
+        master_id = sampleset.master_id
+        if master_id:
+            print(master_id)
+            sound = self.client.get_sound(
+                master_id, fields="id,name,type,duration,previews"
+            )
+            print(colored("Master sound exists...", "green"))
+
+        if not sound:
+            sound = await self.search_master_sound(word)
+
+        if not sound:
+            sampleset.clean()
+            return False
+
+        sampleset.master_id = sound.id
+
+        print("Sound found: " + sound.name)
+
+        similar = sound.get_similar(
+            fields="id,name,type,duration,previews",
+            page_size=50,
+        )
+
+        ssounds = []
+        for result in similar:
+            if len(existing_samples) >= num:
+                break
+            if result.id == sound.id:
+                continue
+            if result.duration > 5:
+                continue
+            if result.id in sampleset.sounds:
+                continue
+            ssounds.append(result)
+            existing_samples.append(result.id)
+
+        # Define random common duration for word samples
+        sample_duration = random.randint(200, 5000)
+        print("Random sample duration: " + str(sample_duration) + "ms")
+        sample_num = len(existing_samples)
+        tasks = []
+        for ssound in ssounds:
+            tasks.append(self.download(sampleset, ssound, sample_duration, sample_num))
+            sample_num += 1
+        await asyncio.gather(*tasks)
+
+        sampleset.saveconfig()
+
+        if len(sampleset.list()) == 0:
+            sampleset.clean()
+            return False
+
+        return True
+
+    async def search_master_sound(self, word):
+        """Search master sound for a word"""
         print("")
         print(colored('Searching freesound for "' + word + '"...', "green"))
         print("")
@@ -59,57 +114,15 @@ class Dj:
 
         if len(results.results) == 0:
             print_error("No found samples.")
-            if not glob(word_dir + "/*.wav"):
-                os.rmdir(word_dir)
-            return False
+            return None
 
-        similar = None
-        while not similar:
-            key = random.randint(0, len(results.results) - 1)
-            sound = results[key]
-            name = sound.name
-            print("Sound found: " + name)
-            try:
-                similar = sound.get_similar(
-                    fields="id,name,type,duration,previews",
-                    page_size=50,
-                )
-            except freesound.FreesoundException as exception:
-                if exception.code == 404:
-                    print_error("Missing sound, continue")
-                    continue
-                else:
-                    print_error("Error while getting similar sounds", exception)
-                    raise exception
+        key = random.randint(0, len(results.results) - 1)
+        sound = results[key]
+        return sound
 
-        ssounds = []
-        for result in similar:
-            if len(ssounds) >= num:
-                break
-            if result.id == sound.id:
-                continue
-            if result.duration > 5:
-                continue
-            ssounds.append(result)
-
-        # Define random common duration for word samples
-        sample_duration = random.randint(200, 5000)
-        print("Random sample duration: " + str(sample_duration) + "ms")
-        sample_num = 0
-        tasks = []
-        for ssound in ssounds:
-            tasks.append(self.download(word_dir, ssound, sample_duration, sample_num))
-            sample_num += 1
-        await asyncio.gather(*tasks)
-
-        if not glob(word_dir + "/*.wav"):
-            os.rmdir(word_dir)
-            return False
-
-        return True
-
-    async def download(self, word_dir, ssound, sample_duration, sample_num):
+    async def download(self, sampleset, ssound, sample_duration, sample_num):
         """Download a sample"""
+        word_dir = sampleset.dir()
         try:
             source_name = str(sample_num) + "-source"
             source_path = word_dir + "/" + source_name
@@ -123,6 +136,7 @@ class Dj:
             begin = random.randint(0, max(duration - sample_duration, 0))
             sound = sound[begin : begin + sample_duration]  # random cut
             sound.export(word_dir + "/" + export_name, format="wav")
+            sampleset.add(ssound.id)
             print("Sample " + word_dir + "#" + str(sample_num) + " downloaded!")
         except pydub.exceptions.CouldntDecodeError as exception:
             print_error("Error while decoding source file", exception)

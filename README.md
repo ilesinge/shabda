@@ -59,33 +59,21 @@ To do
   - https://github.com/dktr0/estuary/wiki#adding-sound-files-to-estuarywebdirt-on-the-fly-early-august-2021
   - Why do some samples don't work ? see https://shabda.ndre.gr/lol:2.json
   - Finetune query:
-    - https://freesound.org/docs/api/resources_apiv2.html#sound-text-search
-    - https://freesound.org/docs/api/resources_apiv2.html#sound-content-search
-    - https://freesound.org/docs/api/resources_apiv2.html#combined-search
-    - duration, etc.
-      - To include duration filter in similar search, see https://freesound.org/docs/api/resources_apiv2.html#request-parameters-1
-    - prevent downloading long samples
-    - change allowed duration in definition ?    
     - total number of results
-  - URL: JSON (check only downloaded resources)
+  - change allowed duration in definition ?
   - URL: JSON + download missing resources (fresh=1?)
-    - Store a cache file containing sample ids?
   - List API and view
   - Solidify: Retry, Queue workers, queue status?
     - https://huey.readthedocs.io/en/latest/index.html
     - https://github.com/litements/litequeue
     - (but with those there is no way to know a queue's status?)
-  - Prevent overwriting if pack already exists (allow force param?)
-  - Serve assets
   - Host on free service?: separate code from assets
   - Beware Throttling: https://freesound.org/docs/api/overview.html
   - Communicate on Estuary Discord
   - Deploy on Heroku ? Vercel ?
-- What if no found sample ? =>
-  - random sound ? other ?
-  - error on web ?
 - Download as zip
-- Random word from dictionary
+- Random word from dictionary (& if sound not found ?)
+- Record your voice
 - Normalize samples volume
     - How to normalize sound:
     - peak_amplitude = sound.max
@@ -94,4 +82,3 @@ To do
     - https://github.com/jiaaro/pydub/issues/90
     - https://stackoverflow.com/questions/42492246/how-to-normalize-the-volume-of-an-audio-file-in-python-any-packages-currently-a/42496373
 - Use advanced search in a funky way: https://freesound.org/docs/api/analysis_docs.html#analysis-docs
-- record your voice
