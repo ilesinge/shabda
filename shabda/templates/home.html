@@ -104,7 +104,7 @@
         var Shabda = {
             view: function () {
                 return m("main", [
-                    m("h1", "Shabda"),
+                    m("h1", [m("img", { src: "assets/logo.svg", height: "40" }), "Shabda"]),
 
                     m("div",
                         m("input[placeholder=Pack definition]", {
