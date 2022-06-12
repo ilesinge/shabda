@@ -94,9 +94,11 @@
             padding: 0;
         }
 
-        audio {
-            border-radius: 20px;
-            opacity: 0.8;
+        @supports (-moz-appearance:none) {
+            audio {
+                opacity: 0.8;
+                border-radius: 20px;
+            }
         }
     </style>
 

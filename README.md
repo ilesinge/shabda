@@ -77,6 +77,7 @@ To do
   - Host on free service?: separate code from assets
   - Deploy on Heroku ? Vercel ?
   - Deploy with ansible through Github Actions
+- Don't cut sound ?
 - Download as zip
 - Random word from dictionary (& if sound not found ?)
 - Record your voice
