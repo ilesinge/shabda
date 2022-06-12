@@ -84,6 +84,20 @@
                 opacity: 0;
             }
         }
+
+        audio::-webkit-media-controls-panel {
+            background-color: #ccb9ff;
+        }
+
+        .samples {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        audio {
+            border-radius: 20px;
+            opacity: 0.8;
+        }
     </style>
 
 </head>
@@ -98,6 +112,7 @@
             pack: "",
             progress: false,
             lastretrieved: "",
+            lastreslistcontents: [],
             error: "",
 
             lastretrievedreslist: function () {
@@ -120,6 +135,12 @@
                             State.progress = false
                             if (result.status == "ok") {
                                 State.lastretrieved = result.definition
+                                m.request({
+                                    method: "GET",
+                                    url: State.lastretrievedreslist()
+                                }).then(function (result) {
+                                    State.lastreslistcontents = result
+                                })
                             }
                             else if (result.status == "empty") {
                                 State.error = "Pack is empty"
@@ -176,7 +197,15 @@
                                             m("br"),
                                             m("pre", State.lastreslist()),
                                             m("img", { onclick: State.copyreslist, src: "assets/clipboard.png", height: "16" }),
-                                            State.copied ? m("span.copied", "copied") : null
+                                            State.copied ? m("span.copied", "copied") : null,
+                                            m('ul.samples', function () {
+                                                soundlist = []
+                                                for (index in State.lastreslistcontents) {
+                                                    sound = State.lastreslistcontents[index]
+                                                    soundlist.push(m('li', m('audio', { controls: true, src: sound.url })))
+                                                }
+                                                return soundlist
+                                            }())
                                         ]) :
                                         null
                             )
