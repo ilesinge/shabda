@@ -1,0 +1,22 @@
+{
+    "short_name": "Shabda",
+    "name": "Shabda: semantic sound kit curator",
+    "icons": [
+        {
+            "src": "/assets/logo_192.png",
+            "type": "image/png",
+            "sizes": "192x192"
+        },
+        {
+            "src": "/assets/logo_512.png",
+            "type": "image/png",
+            "sizes": "512x512"
+        }
+    ],
+    "start_url": "/",
+    "background_color": "#b4fccc",
+    "display": "standalone",
+    "scope": "/",
+    "theme_color": "#110072",
+    "description": "Semantic sound kit curator"
+}
