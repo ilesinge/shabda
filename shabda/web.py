@@ -28,10 +28,16 @@ async def pack(definition):
         if number is None:
             number = 1
         tasks.append(fetch_one(word, number))
-    await asyncio.gather(*tasks)
+    results = await asyncio.gather(*tasks)
+
+    global_status = "empty"
+    for status in results:
+        if status is True:
+            global_status = "ok"
+
     return jsonify(
         {
-            "status": "ok",
+            "status": global_status,
             "definition": definition,
         }
     )
@@ -101,7 +107,7 @@ def cors_after(response):
 
 async def fetch_one(word, number):
     """Fetch a single sample set"""
-    await dj.fetch(word, number)
+    return await dj.fetch(word, number)
 
 
 def parse_definition(definition):

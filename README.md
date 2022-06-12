@@ -71,8 +71,6 @@ To do
   - URL: JSON + download missing resources (fresh=1?)
     - Store a cache file containing sample ids?
   - List API and view
-  - Delete folder if empty
-    - show error
   - Solidify: Retry, Queue workers, queue status?
     - https://huey.readthedocs.io/en/latest/index.html
     - https://github.com/litements/litequeue

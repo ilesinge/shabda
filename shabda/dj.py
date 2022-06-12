@@ -59,7 +59,9 @@ class Dj:
 
         if len(results.results) == 0:
             print_error("No found samples.")
-            return
+            if not glob(word_dir + "/*.wav"):
+                os.rmdir(word_dir)
+            return False
 
         similar = None
         while not similar:
@@ -99,6 +101,12 @@ class Dj:
             tasks.append(self.download(word_dir, ssound, sample_duration, sample_num))
             sample_num += 1
         await asyncio.gather(*tasks)
+
+        if not glob(word_dir + "/*.wav"):
+            os.rmdir(word_dir)
+            return False
+
+        return True
 
     async def download(self, word_dir, ssound, sample_duration, sample_num):
         """Download a sample"""

@@ -83,8 +83,16 @@
                         url: "/pack/" + encodeURIComponent(State.pack)
                     })
                         .then(function (result) {
-                            State.lastretrieved = result.definition
                             State.progress = false
+                            if (result.status == "ok") {
+                                State.lastretrieved = result.definition
+                            }
+                            else if (result.status == "empty") {
+                                State.error = "Pack is empty"
+                            }
+                            else {
+                                State.error = "An error occured"
+                            }
                         })
                 }
                 else {
