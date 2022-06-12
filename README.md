@@ -58,20 +58,20 @@ To do
 -----
 
 - Explain how to use
-- Explain how to launch on codespace / how to make port public
-- Shabda web for Estuary dynamic samples
   - https://github.com/dktr0/estuary/wiki#adding-sound-files-to-estuarywebdirt-on-the-fly-early-august-2021
-  - Why do some samples don't work ? see https://shabda.ndre.gr/lol:2.json
-  - Finetune query:
-    - total number of results
-  - change allowed duration in definition ?
-  - URL: JSON + download missing resources (fresh=1?)
-  - List API and view
-  - Solidify: Retry, Queue workers, queue status?
-    - https://huey.readthedocs.io/en/latest/index.html
-    - https://github.com/litements/litequeue
-    - (but with those there is no way to know a queue's status?)
-  - Communicate about throttling: https://freesound.org/docs/api/overview.html
+- Explain how to launch on codespace / how to make port public
+- Why do some samples don't work ? see https://shabda.ndre.gr/lol:2.json
+- Preview the samples
+- Finetune query:
+  - total number of results
+- Change allowed duration in definition ?
+- URL: JSON + download missing resources (fresh=1?)
+- List API and view
+- Solidify: Retry, Queue workers, queue status?
+  - https://huey.readthedocs.io/en/latest/index.html
+  - https://github.com/litements/litequeue
+  - (but with those there is no way to know a queue's status?)
+- Communicate about throttling: https://freesound.org/docs/api/overview.html
 - Communicate on Estuary Discord, twitter, Tidal Cycles club, etc.
 - Prod
   - Host on free service?: separate code from assets
