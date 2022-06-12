@@ -54,6 +54,7 @@ Scenario
 To do
 -----
 
+- Explain how to use
 - Explain how to launch on codespace / how to make port public
 - Shabda web for Estuary dynamic samples
   - https://github.com/dktr0/estuary/wiki#adding-sound-files-to-estuarywebdirt-on-the-fly-early-august-2021
@@ -67,18 +68,19 @@ To do
     - https://huey.readthedocs.io/en/latest/index.html
     - https://github.com/litements/litequeue
     - (but with those there is no way to know a queue's status?)
+  - Communicate about throttling: https://freesound.org/docs/api/overview.html
+- Communicate on Estuary Discord, twitter, Tidal Cycles club, etc.
+- Prod
   - Host on free service?: separate code from assets
-  - Beware Throttling: https://freesound.org/docs/api/overview.html
-  - Communicate on Estuary Discord
   - Deploy on Heroku ? Vercel ?
+  - Deploy with ansible through Github Actions
 - Download as zip
 - Random word from dictionary (& if sound not found ?)
 - Record your voice
-- Normalize samples volume
-    - How to normalize sound:
-    - peak_amplitude = sound.max
-    - sound_gain_6db = sound + 6
-    - https://www.pydoc.io/pypi/pydub-0.9.5/autoapi/effects/index.html
-    - https://github.com/jiaaro/pydub/issues/90
-    - https://stackoverflow.com/questions/42492246/how-to-normalize-the-volume-of-an-audio-file-in-python-any-packages-currently-a/42496373
+- Adjust amplitude normalization of samples
+- Remove silence at beginning and end of samples:
+  - https://www.tutorialexample.com/python-remove-silence-in-wav-using-librosa-librosa-tutorial/
+  - https://librosa.org/doc/latest/generated/librosa.effects.trim.html
+- Extract percussive ?
+  - https://librosa.org/doc/latest/generated/librosa.effects.hpss.html
 - Use advanced search in a funky way: https://freesound.org/docs/api/analysis_docs.html#analysis-docs

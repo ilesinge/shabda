@@ -122,7 +122,12 @@ class Dj:
         return sound
 
     async def download(self, sampleset, ssound, sample_duration, sample_num):
-        """Download a sample"""
+        """Download a sample, normalize and cut it"""
+
+        def match_target_amplitude(sound, target_dbfs):
+            change_in_dbfs = target_dbfs - sound.dBFS
+            return sound.apply_gain(change_in_dbfs)
+
         word_dir = sampleset.dir()
         try:
             source_name = str(sample_num) + "-source"
@@ -132,6 +137,7 @@ class Dj:
             await loop.run_in_executor(None, ssound.retrieve, word_dir, source_name)
 
             sound = pydub.AudioSegment.from_file(source_path)
+            sound = match_target_amplitude(sound, -30.0)
             export_name = str(sample_num) + ".wav"
             duration = len(sound)
             begin = random.randint(0, max(duration - sample_duration, 0))
