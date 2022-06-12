@@ -31,7 +31,7 @@ FLASK_APP=shabda FLASK_ENV=development pipenv run flask run
 ```
 In production:
 ```
-pipenv run gunicorn "shabda:create_app()" -b localhost:8000
+pipenv run gunicorn --workers=4 "shabda:create_app()" -b localhost:8000
 ```
 
 Scenario
