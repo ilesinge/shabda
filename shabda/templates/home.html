@@ -199,29 +199,29 @@
                         m("button", {
                             onclick: State.retrieve
                         }, "Fetch pack"),
-                        m("span.error", State.error),
                         m("div", [
                             m("h2", "Pack"),
                             m("div.pack",
-                                State.progress ?
-                                    m("img", { src: "assets/infinity.svg" }) :
-                                    State.lastretrieved ?
-                                        m("div.latest", [
-                                            "Insert in Estuary terminal: ",
-                                            m("br"),
-                                            m("pre", State.lastreslist()),
-                                            m("img", { onclick: State.copyreslist, src: "assets/clipboard.png", height: "16" }),
-                                            State.copied ? m("span.copied", "copied") : null,
-                                            m('ul.samples', function () {
-                                                soundlist = []
-                                                for (index in State.lastreslistcontents) {
-                                                    sound = State.lastreslistcontents[index]
-                                                    soundlist.push(m('li', m('audio', { controls: true, src: sound.url })))
-                                                }
-                                                return soundlist
-                                            }())
-                                        ]) :
-                                        null
+                                State.error ? m("span.error", State.error) :
+                                    State.progress ?
+                                        m("img", { src: "assets/infinity.svg" }) :
+                                        State.lastretrieved ?
+                                            m("div.latest", [
+                                                "Insert in Estuary terminal: ",
+                                                m("br"),
+                                                m("pre", State.lastreslist()),
+                                                m("img", { onclick: State.copyreslist, src: "assets/clipboard.png", height: "16" }),
+                                                State.copied ? m("span.copied", "copied") : null,
+                                                m('ul.samples', function () {
+                                                    soundlist = []
+                                                    for (index in State.lastreslistcontents) {
+                                                        sound = State.lastreslistcontents[index]
+                                                        soundlist.push(m('li', m('audio', { controls: true, src: sound.url })))
+                                                    }
+                                                    return soundlist
+                                                }())
+                                            ]) :
+                                            m("i", "Fetch a pack to see its contents")
                             )
                         ]),
                     )
