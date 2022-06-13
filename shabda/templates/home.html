@@ -16,8 +16,10 @@
             background-color: #b4fccc;
             color: #110072;
             font-family: sans-serif;
-            padding: 50px;
+            padding: 20px 50px;
         }
+
+        .intro {}
 
         #definition {
             border: 2px dotted #110072;
@@ -173,6 +175,16 @@
             view: function () {
                 return m("main", [
                     m("h1", [m("img", { src: "assets/logo.svg", height: "40" }), "Shabda"]),
+
+                    m("p.intro", ["This is a web app for creating and sharing packs of audio samples.",
+                        m("br"),
+                        "It fetches random samples from ",
+                        m("a", { href: "https://freesound.org/" }, "freesound.org"),
+                        " based on given words, for use in impro sessions on instruments such as ",
+                        m("a", { href: "https://tidalcycles.org/" }, "Tidal Cycles"),
+                        " and ",
+                        m("a", { href: "https://estuary.mcmaster.ca/" }, "Estuary"),
+                        "."]),
 
                     m("div",
                         m("input[placeholder=Pack definition]#definition", {
