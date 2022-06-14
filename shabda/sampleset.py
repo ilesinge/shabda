@@ -38,6 +38,7 @@ class SampleSet:
         filenames = []
         if os.path.exists(self.dir()):
             filenames = filenames + glob(self.dir() + "/*.wav")
+        filenames.sort()
         if max_number is not None:
             filenames = filenames[0:max_number]
         return filenames
