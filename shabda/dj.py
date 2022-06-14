@@ -140,11 +140,16 @@ class Dj:
             await loop.run_in_executor(None, ssound.retrieve, word_dir, source_name)
 
             sound = pydub.AudioSegment.from_file(source_path)
-            sound = match_target_amplitude(sound, -30.0)
+            sound = sound.set_frame_rate(44100)
+            sound = sound.set_channels(1)
             export_name = str(sample_num) + ".wav"
+
+            sound = match_target_amplitude(sound, -20.0)
+            """
             duration = len(sound)
             begin = random.randint(0, max(duration - sample_duration, 0))
             sound = sound[begin : begin + sample_duration]  # random cut
+            """
             sound.export(word_dir + "/" + export_name, format="wav")
             sampleset.add(ssound.id)
             print("Sample " + word_dir + "#" + str(sample_num) + " downloaded!")
