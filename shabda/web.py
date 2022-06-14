@@ -113,7 +113,6 @@ async def fetch_one(word, number):
 def parse_definition(definition):
     """Parse a pack definition"""
     words = {}
-    print(definition)
     sections = definition.split(",")
     for section in sections:
         parts = section.split(":")
