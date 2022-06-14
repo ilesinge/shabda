@@ -42,7 +42,6 @@ class Dj:
 
         master_id = sampleset.master_id
         if master_id:
-            print(master_id)
             sound = self.client.get_sound(
                 master_id, fields="id,name,type,duration,previews"
             )
@@ -64,6 +63,8 @@ class Dj:
             page_size=50,
         )
 
+        print("Found " + str(len(similar.results)) + " similar sounds.")
+
         ssounds = []
         for result in similar:
             if existing_number >= num:
@@ -76,6 +77,8 @@ class Dj:
                 continue
             ssounds.append(result)
             existing_number += 1
+
+        print("Remaining " + str(len(ssounds)) + " similar sounds after filtering.")
 
         # Define random common duration for word samples
         sample_duration = random.randint(200, 5000)
