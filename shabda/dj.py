@@ -98,27 +98,37 @@ class Dj:
 
         return True
 
+    def random_word(self):
+        """Choose a random word"""
+        file = os.path.dirname(__file__) + "/" + "1000nouns.txt"
+        words = open(file, "r", encoding="utf-8").read().splitlines()
+        word = random.choice(words)
+        return word
+
     async def search_master_sound(self, word):
         """Search master sound for a word"""
-        print("")
-        print(colored('Searching freesound for "' + word + '"...', "green"))
-        print("")
+        found = None
+        while found is None:
+            print("")
+            print(colored('Searching freesound for "' + word + '"...', "green"))
+            print("")
+            loop = asyncio.get_event_loop()
+            results = await loop.run_in_executor(
+                None,
+                partial(
+                    self.client.text_search,
+                    query=word,
+                    fields="id,name,type,duration,previews",
+                    page_size=10,
+                    filter="duration:[* TO 1]",
+                ),
+            )
 
-        loop = asyncio.get_event_loop()
-        results = await loop.run_in_executor(
-            None,
-            partial(
-                self.client.text_search,
-                query=word,
-                fields="id,name,type,duration,previews",
-                page_size=10,
-                filter="duration:[* TO 1]",
-            ),
-        )
-
-        if len(results.results) == 0:
-            print_error("No found samples.")
-            return None
+            if len(results.results) == 0:
+                print_error("No found samples.")
+                word = self.random_word()
+            else:
+                found = True
 
         key = random.randint(0, len(results.results) - 1)
         sound = results[key]
