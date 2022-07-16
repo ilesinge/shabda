@@ -80,6 +80,9 @@ To do
 - Don't cut sound ? or trim before cut ? keep beginning only ?
 - Download as zip
 - Random word from dictionary (& if sound not found ?)
+- Allow to rename sample ?
+  - Allow emojis in sample name ?
+  - Allow spaces in sample name ? special unicode spaces ? Reverse ?
 - Record your voice
 - Adjust amplitude normalization of samples
 - Remove silence at beginning and end of samples:

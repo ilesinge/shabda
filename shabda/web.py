@@ -24,7 +24,10 @@ async def pack(definition):
     """Retrieve a pack of samples"""
     tasks = []
     words = parse_definition(definition)
+    cleandefinition = []
     for word, number in words.items():
+        cleandefinition.append(word + (":" + str(number) if number else ""))
+
         if number is None:
             number = 1
         tasks.append(fetch_one(word, number))
@@ -38,7 +41,7 @@ async def pack(definition):
     return jsonify(
         {
             "status": global_status,
-            "definition": definition,
+            "definition": ",".join(cleandefinition),
         }
     )
 
@@ -116,7 +119,8 @@ def parse_definition(definition):
     sections = definition.split(",")
     for section in sections:
         parts = section.split(":")
-        word = parts[0]
+        rawword = parts[0]
+        word = "".join(ch for ch in rawword if ch.isalnum())
         if len(word) == 0:
             raise BadRequest("A sample name is required")
         number = None
