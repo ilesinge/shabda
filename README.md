@@ -61,7 +61,6 @@ To do
   - https://github.com/dktr0/estuary/wiki#adding-sound-files-to-estuarywebdirt-on-the-fly-early-august-2021
 - Explain how to launch on codespace / how to make port public
 - Why do some samples don't work ? see https://shabda.ndre.gr/lol:2.json
-- Preview the samples
 - Finetune query:
   - total number of results
 - Change allowed duration in definition ?
@@ -78,8 +77,7 @@ To do
   - Deploy on Heroku ? Vercel ?
   - Deploy with ansible through Github Actions
 - Don't cut sound ? or trim before cut ? keep beginning only ?
-- Download as zip
-- Random word from dictionary (& if sound not found ?)
+- Finally delete zip file
 - Allow to rename sample ?
   - Allow emojis in sample name ?
   - Allow spaces in sample name ? special unicode spaces ? Reverse ?
