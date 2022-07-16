@@ -3,7 +3,16 @@
 import asyncio
 from urllib.parse import urlparse
 import json
-from flask import Blueprint, jsonify, send_from_directory, request, render_template
+from zipfile import ZipFile
+import tempfile
+from flask import (
+    Blueprint,
+    jsonify,
+    send_from_directory,
+    request,
+    render_template,
+    send_file,
+)
 from werkzeug.exceptions import BadRequest, HTTPException
 from shabda.dj import Dj
 
@@ -24,10 +33,7 @@ async def pack(definition):
     """Retrieve a pack of samples"""
     tasks = []
     words = parse_definition(definition)
-    cleandefinition = []
     for word, number in words.items():
-        cleandefinition.append(word + (":" + str(number) if number else ""))
-
         if number is None:
             number = 1
         tasks.append(fetch_one(word, number))
@@ -41,7 +47,7 @@ async def pack(definition):
     return jsonify(
         {
             "status": global_status,
-            "definition": ",".join(cleandefinition),
+            "definition": clean_definition(words),
         }
     )
 
@@ -72,8 +78,22 @@ def pack_json(definition):
     return jsonify(reslist)
 
 
+@bp.route("/<definition>.zip")
+def pack_zip(definition):
+    """Download a zip archive"""
+    words = parse_definition(definition)
+    definition = clean_definition(words)
+    tmpfile = tempfile.gettempdir() + "/" + definition + ".zip"
+    with ZipFile(tmpfile, "w") as zipfile:
+        for word, number in words.items():
+            samples = dj.list(word, number)
+            for sample in samples:
+                zipfile.write(sample, sample[len("samples/") :])
+    return send_file(tmpfile, as_attachment=True)
+
+
 @bp.route("/samples/<path:path>")
-def sample(path):
+def serve_sample(path):
     """Serve a sample"""
     return send_from_directory("../samples/", path, as_attachment=False)
 
@@ -137,3 +157,11 @@ def parse_definition(definition):
                 raise BadRequest("A sample number must be less than 11")
         words[word] = number
     return words
+
+
+def clean_definition(words):
+    """reconstruct the definition without unwanted chars"""
+    definition = []
+    for word, number in words.items():
+        definition.append(word + (":" + str(number) if number else ""))
+    return ",".join(definition)

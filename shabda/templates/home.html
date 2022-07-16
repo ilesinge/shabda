@@ -35,7 +35,8 @@
             border: 2px solid #110072;
         }
 
-        button {
+        button, .button {
+            display: inline-block;
             border: 2px solid #110072;
             border-radius: 5px;
             box-shadow: 3px 3px 2px #110072;
@@ -43,11 +44,22 @@
             margin: 10px;
             color: #110072;
             cursor: pointer;
+            background-color: white;
+            text-decoration-line: none;
+            font-size: 14px;
         }
 
-        button:active {
+        button:hover, .button:hover {
+            background-color: rgb(208, 208, 215);
+        }
+
+        button:active, .button:active {
             transform: translate(2px, 2px);
             box-shadow: 1px 1px 2px #110072;
+        }
+        
+        button img, .button img {
+            vertical-align: top;
         }
 
         .pack {
@@ -121,6 +133,10 @@
 
             lastretrievedreslist: function () {
                 return this.lastretrieved + ".json"
+            },
+
+            lastretrievedzip: function () {
+                return window.location + this.lastretrieved + ".zip"
             },
 
             lastreslist: function () {
@@ -219,7 +235,8 @@
                                                         soundlist.push(m('li', m('audio', { controls: true, src: sound.url })))
                                                     }
                                                     return soundlist
-                                                }())
+                                                }()),
+                                                m("a.button", {'href': State.lastretrievedzip()}, [m("img", { src: "assets/archiver.png", height: "16", title: "Download sample archive" } ), " Download all"]),
                                             ]) :
                                             m("i", "Fetch a pack to see its contents")
                             )
