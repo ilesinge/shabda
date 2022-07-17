@@ -37,23 +37,6 @@ In production:
 pipenv run gunicorn --workers=4 "shabda:create_app()" -b localhost:8000
 ```
 
-Scenario
---------
-
-- Provide some words
-- For each word
-    - Create a sample directory for this word
-    - Define a random sample duration
-    - Search a list of 100 sounds containing this word
-    - Pick one random sound
-    - Get 100 similar sounds to this sound
-    - Pick 5 random sounds from those
-    - For each of those random similar sounds
-        - Download sound
-        - Cut a sample of X seconds, with random position
-        - Save in the word samples directory in wav format
-- Have fun :)
-
 To do
 -----
 
