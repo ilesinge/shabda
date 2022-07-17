@@ -19,7 +19,10 @@
             padding: 20px 50px;
         }
 
-        .intro {}
+        .explanation {
+            font-size: 0.8em;
+            font-style: italic;
+        }
 
         #definition {
             border: 2px dotted #110072;
@@ -192,9 +195,9 @@
                 return m("main", [
                     m("h1", [m("img", { src: "assets/logo.svg", height: "40" }), "Shabda"]),
 
-                    m("p.intro", ["This is a web app for assembling and sharing packs of found audio samples.",
+                    m("p.intro", ["Shabda is a tool for assembling and sharing packs of found audio samples.",
                         m("br"),
-                        "It fetches random samples from ",
+                        "It fetches samples from ",
                         m("a", { href: "https://freesound.org/" }, "freesound.org"),
                         " based on given words, for use in impro sessions on instruments such as ",
                         m("a", { href: "https://tidalcycles.org/" }, "Tidal Cycles"),
@@ -215,6 +218,17 @@
                         m("button", {
                             onclick: State.retrieve
                         }, "Fetch pack"),
+
+                        m("p.explanation", [
+                            "Any word can be a pack definition.",
+                            m("br"),
+                            "If you want more than one sample, separate words by a comma.",
+                            m("br"),
+                            "You can define how many variations of a sample to assemble by adding a colon and a number.",
+                            m("br"),
+                            "e.g. 'blue,red:3,yellow' will produce one 'blue' sample, 3 'red' samples and one 'yellow' sample."
+                        ]),
+
                         m("div", [
                             m("h2", "Pack"),
                             m("div.pack",
