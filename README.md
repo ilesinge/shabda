@@ -37,17 +37,19 @@ In production:
 pipenv run gunicorn --workers=4 "shabda:create_app()" -b localhost:8000
 ```
 
+Notes
+-----
+
+With Estuary, Shabda makes use of this feature: https://github.com/dktr0/estuary/wiki#adding-sound-files-to-estuarywebdirt-on-the-fly
+
 To do
 -----
 
-- Explain how to use
-  - https://github.com/dktr0/estuary/wiki#adding-sound-files-to-estuarywebdirt-on-the-fly-early-august-2021
 - Explain how to launch on codespace / how to make port public
-- Why do some samples don't work ? see https://shabda.ndre.gr/lol:2.json
+- Why do some samples don't work on Firefox ? see https://shabda.ndre.gr/lol:2.json
 - Finetune query:
   - total number of results
 - Change allowed duration in definition ?
-- URL: JSON + download missing resources (fresh=1?)
 - List API and view
 - Solidify: Retry, Queue workers, queue status?
   - https://huey.readthedocs.io/en/latest/index.html

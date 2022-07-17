@@ -19,6 +19,19 @@
             padding: 20px 50px;
         }
 
+        .help img, .help p {
+            float: left;
+        }
+        .help p {
+            margin-left: 10px;
+            margin-top: 0px;
+        }
+
+        .pack-container {
+            clear: both;
+            padding: 1px;
+        }
+
         .explanation {
             font-size: 0.8em;
             font-style: italic;
@@ -66,7 +79,7 @@
         }
 
         .pack {
-            padding: 10px;
+            padding: 0 10px;
         }
 
         .latest pre {
@@ -219,17 +232,28 @@
                             onclick: State.retrieve
                         }, "Fetch pack"),
 
-                        m("p.explanation", [
-                            "Any word can be a pack definition.",
-                            m("br"),
-                            "If you want more than one sample, separate words by a comma.",
-                            m("br"),
-                            "You can define how many variations of a sample to assemble by adding a colon and a number.",
-                            m("br"),
-                            "e.g. 'blue,red:3,yellow' will produce one 'blue' sample, 3 'red' samples and one 'yellow' sample."
+                        m("br"),
+                        m("br"),
+                        
+                        m("div.help", [
+                            m("img", { src: "assets/help.png", height: "32", title: "Help" } ),
+                            
+                            m("p.explanation", [
+                                "Any word can be a pack definition.",
+                                m("br"),
+                                "If you want more than one sample, separate words by a comma.",
+                                m("br"),
+                                "You can define how many variations of a sample to assemble by adding a colon and a number.",
+                                m("br"),
+                                "e.g. 'blue,red:3,yellow' will produce one 'blue' sample, 3 'red' samples and one 'yellow' sample.",
+                                m("br"),
+                                m("br"),
+                                "In a hurry? You can directly include a pack in Estuary by executing in its terminal:",
+                                m("pre", '!reslist "' + location.href + 'blue,red.json"')
+                            ]),
                         ]),
 
-                        m("div", [
+                        m("div.pack-container", [
                             m("h2", "Pack"),
                             m("div.pack",
                                 State.error ? m("span.error", State.error) :
@@ -250,7 +274,7 @@
                                                     }
                                                     return soundlist
                                                 }()),
-                                                m("a.button", {'href': State.lastretrievedzip()}, [m("img", { src: "assets/archiver.png", height: "16", title: "Download sample archive" } ), " Download all"]),
+                                                m("a.button", {'href': State.lastretrievedzip()}, "Download all"),
                                             ]) :
                                             m("i", "Fetch a pack to see its contents")
                             )
