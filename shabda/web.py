@@ -55,8 +55,11 @@ async def pack(definition):
 
 
 @bp.route("/<definition>.json")
-def pack_json(definition):
+async def pack_json(definition):
     """Download a reslist definition"""
+
+    await pack(definition)
+
     url = urlparse(request.base_url)
     base = url.scheme + "://" + url.hostname
     if url.port:
