@@ -77,7 +77,6 @@ To do
   - Deploy on Heroku ? Vercel ?
   - Deploy with ansible through Github Actions
 - Don't cut sound ? or trim before cut ? keep beginning only ?
-- Finally delete zip file
 - Allow to rename sample ?
   - Allow emojis in sample name ?
   - Allow spaces in sample name ? special unicode spaces ? Reverse ?

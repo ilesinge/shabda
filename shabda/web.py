@@ -3,6 +3,7 @@
 import asyncio
 from urllib.parse import urlparse
 import json
+import os
 from zipfile import ZipFile
 import tempfile
 from flask import (
@@ -12,6 +13,7 @@ from flask import (
     request,
     render_template,
     send_file,
+    after_this_request,
 )
 from werkzeug.exceptions import BadRequest, HTTPException
 from shabda.dj import Dj
@@ -89,6 +91,12 @@ def pack_zip(definition):
             samples = dj.list(word, number)
             for sample in samples:
                 zipfile.write(sample, sample[len("samples/") :])
+
+    @after_this_request
+    def remove_file(response):
+        os.remove(tmpfile)
+        return response
+
     return send_file(tmpfile, as_attachment=True)
 
 
