@@ -130,6 +130,9 @@
                 border-radius: 20px;
             }
         }
+        .footer {
+            text-align: right;
+        }
     </style>
 
 </head>
@@ -279,6 +282,10 @@
                                             m("i", "Fetch a pack to see its contents")
                             )
                         ]),
+                    ),
+
+                    m('p.footer',
+                        m('a', {'href': "https://github.com/ilesinge/shabda", "title": "Source code"}, m('img', {'src': "assets/github.png", "height": "16px"}))
                     )
                 ])
             }
