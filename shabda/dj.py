@@ -142,6 +142,9 @@ class Dj:
         try:
             source_name = str(sample_num) + "-source"
             source_path = word_dir + "/" + source_name
+            export_name = str(sample_num) + ".wav"
+            export_path = word_dir + "/" + export_name
+
             print("Dowloading " + word_dir + " sample #" + str(sample_num) + "...")
             loop = asyncio.get_event_loop()
             await loop.run_in_executor(None, ssound.retrieve, word_dir, source_name)
@@ -150,10 +153,9 @@ class Dj:
             sound = sound.set_frame_rate(44100)
             sound = sound.set_channels(1)
             sound = sound.set_sample_width(2)
-            export_name = str(sample_num) + ".wav"
-
             sound = match_target_amplitude(sound, -20.0)
-            sound.export(word_dir + "/" + export_name, format="wav")
+            sound.export(export_path, format="wav")
+
             sampleset.add(ssound.id)
             print("Sample " + word_dir + "#" + str(sample_num) + " downloaded!")
         except pydub.exceptions.CouldntDecodeError as exception:
