@@ -80,13 +80,10 @@ class Dj:
 
         print("Remaining " + str(len(ssounds)) + " similar sounds after filtering.")
 
-        # Define random common duration for word samples
-        sample_duration = random.randint(200, 5000)
-        print("Random sample duration: " + str(sample_duration) + "ms")
         sample_num = len(existing_samples)
         tasks = []
         for ssound in ssounds:
-            tasks.append(self.download(sampleset, ssound, sample_duration, sample_num))
+            tasks.append(self.download(sampleset, ssound, sample_num))
             sample_num += 1
         await asyncio.gather(*tasks)
 
@@ -134,7 +131,7 @@ class Dj:
         sound = results[key]
         return sound
 
-    async def download(self, sampleset, ssound, sample_duration, sample_num):
+    async def download(self, sampleset, ssound, sample_num):
         """Download a sample, normalize and cut it"""
 
         def match_target_amplitude(sound, target_dbfs):
@@ -152,14 +149,10 @@ class Dj:
             sound = pydub.AudioSegment.from_file(source_path)
             sound = sound.set_frame_rate(44100)
             sound = sound.set_channels(1)
+            sound = sound.set_sample_width(2)
             export_name = str(sample_num) + ".wav"
 
             sound = match_target_amplitude(sound, -20.0)
-            """
-            duration = len(sound)
-            begin = random.randint(0, max(duration - sample_duration, 0))
-            sound = sound[begin : begin + sample_duration]  # random cut
-            """
             sound.export(word_dir + "/" + export_name, format="wav")
             sampleset.add(ssound.id)
             print("Sample " + word_dir + "#" + str(sample_num) + " downloaded!")
