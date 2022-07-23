@@ -131,6 +131,23 @@ class Dj:
         sound = results[key]
         return sound
 
+    def trim(self, sound):
+        """Trim silence"""
+
+        """
+        We can modify the silence_threshold of the detect_leading_silence function:
+        detect_leading_silence(sound, silence_threshold=-50.0, chunk_size=10)
+        in order to cut more or less
+        """
+
+        def trim_leading_silence(segment: pydub.AudioSegment) -> pydub.AudioSegment:
+            return segment[pydub.silence.detect_leading_silence(segment) :]
+
+        def trim_trailing_silence(segment: pydub.AudioSegment) -> pydub.AudioSegment:
+            return trim_leading_silence(segment.reverse()).reverse()
+
+        return trim_trailing_silence(trim_leading_silence(sound))
+
     async def download(self, sampleset, ssound, sample_num):
         """Download a sample, normalize and cut it"""
 
@@ -154,6 +171,8 @@ class Dj:
             sound = sound.set_channels(1)
             sound = sound.set_sample_width(2)
             sound = match_target_amplitude(sound, -20.0)
+
+            sound = self.trim(sound)
             sound.export(export_path, format="wav")
 
             sampleset.add(ssound.id)

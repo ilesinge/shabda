@@ -65,9 +65,6 @@ To do
   - Allow emojis in sample name ?
   - Allow spaces in sample name ? special unicode spaces ? Reverse ?
 - Record your voice
-- Remove silence at beginning and end of samples:
-  - https://www.tutorialexample.com/python-remove-silence-in-wav-using-librosa-librosa-tutorial/
-  - https://librosa.org/doc/latest/generated/librosa.effects.trim.html
 - Extract percussive ?
   - https://librosa.org/doc/latest/generated/librosa.effects.hpss.html
 - Use advanced search in a funky way: https://freesound.org/docs/api/analysis_docs.html#analysis-docs
