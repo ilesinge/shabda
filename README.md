@@ -46,7 +46,6 @@ To do
 -----
 
 - Explain how to launch on codespace / how to make port public
-- Why do some samples don't work on Firefox ? see https://shabda.ndre.gr/lol:2.json
 - Finetune query:
   - total number of results
 - Change allowed duration in definition ?
@@ -66,7 +65,6 @@ To do
   - Allow emojis in sample name ?
   - Allow spaces in sample name ? special unicode spaces ? Reverse ?
 - Record your voice
-- Adjust amplitude normalization of samples
 - Remove silence at beginning and end of samples:
   - https://www.tutorialexample.com/python-remove-silence-in-wav-using-librosa-librosa-tutorial/
   - https://librosa.org/doc/latest/generated/librosa.effects.trim.html
