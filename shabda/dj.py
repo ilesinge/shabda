@@ -134,11 +134,9 @@ class Dj:
     def trim(self, sound):
         """Trim silence"""
 
-        """
-        We can modify the silence_threshold of the detect_leading_silence function:
-        detect_leading_silence(sound, silence_threshold=-50.0, chunk_size=10)
-        in order to cut more or less
-        """
+        # We can modify the silence_threshold of the detect_leading_silence function:
+        # detect_leading_silence(sound, silence_threshold=-50.0, chunk_size=10)
+        # in order to cut more or less
 
         def trim_leading_silence(segment: pydub.AudioSegment) -> pydub.AudioSegment:
             return segment[pydub.silence.detect_leading_silence(segment) :]

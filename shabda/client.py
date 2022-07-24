@@ -89,7 +89,14 @@ class Client:
 
     def __getattr__(self, attr):
         def wrapped_method(*args, **kwargs):
-            result = getattr(self.client, attr)(*args, **kwargs)
+            try:
+                result = getattr(self.client, attr)(*args, **kwargs)
+            except freesound.FreesoundException as exception:
+                if exception.code == 401:
+                    self._refresh_token()
+                    result = getattr(self.client, attr)(*args, **kwargs)
+                else:
+                    raise exception
             return result
 
         return wrapped_method
