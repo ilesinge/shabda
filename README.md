@@ -6,7 +6,7 @@ Shabda
 
 Shabda is a tool to fetch random samples from https://freesound.org/ based on given words, for use in impro sessions on instruments such as Tidal Cycles and Estuary.
 
-Shabda is the Sanskrit word for "speech sound". In Sanskrit grammar, the term refers to an utterance in the sense of linguistic performance. 
+[Shabda](https://en.wikipedia.org/wiki/Shabda) is the Sanskrit word for "speech sound". In Sanskrit grammar, the term refers to an utterance in the sense of linguistic performance. 
 
 Install
 -------
@@ -46,21 +46,13 @@ To do
 -----
 
 - Explain how to launch on codespace / how to make port public
-- Finetune query:
-  - total number of results
 - Change allowed duration in definition ?
 - List API and view
 - Solidify: Retry, Queue workers, queue status?
   - https://huey.readthedocs.io/en/latest/index.html
   - https://github.com/litements/litequeue
   - (but with those there is no way to know a queue's status?)
-- Communicate about throttling: https://freesound.org/docs/api/overview.html
-- Communicate on Estuary Discord, twitter, Tidal Cycles club, etc.
-- Prod
-  - Host on free service?: separate code from assets
-  - Deploy on Heroku ? Vercel ?
-  - Deploy with ansible through Github Actions
-- Don't cut sound ? or trim before cut ? keep beginning only ?
+- Explain risks about throttling: https://freesound.org/docs/api/overview.html
 - Allow to rename sample ?
   - Allow emojis in sample name ?
   - Allow spaces in sample name ? special unicode spaces ? Reverse ?
