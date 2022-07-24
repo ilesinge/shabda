@@ -132,6 +132,11 @@
         }
         .footer {
             text-align: right;
+            font-size: 12px;
+        }
+        .footer a {
+            color: #110072;
+            text-decoration: none;
         }
     </style>
 
@@ -277,7 +282,7 @@
                                                     }
                                                     return soundlist
                                                 }()),
-                                                m("a.button", {'href': State.lastretrievedzip()}, "Download all"),
+                                                m("a.button", {href: State.lastretrievedzip()}, "Download all"),
                                             ]) :
                                             m("i", "Fetch a pack to see its contents")
                             )
@@ -285,7 +290,11 @@
                     ),
 
                     m('p.footer',
-                        m('a', {'href': "https://github.com/ilesinge/shabda", "title": "Source code"}, m('img', {'src': "assets/github.png", "height": "16px"}))
+                        [
+                            m('a', {href: "https://github.com/ilesinge/shabda", title: "Source code"}, m('img', {src: "assets/github.png", height: "16px"})),
+                            ' by ',
+                            m('a', {href: "https://twitter.com/ilesinge"}, 'ilesinge')
+                        ]
                     )
                 ])
             }
