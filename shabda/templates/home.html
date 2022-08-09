@@ -204,7 +204,7 @@
                                 State.lastretrieved = result.definition
                                 m.request({
                                     method: "GET",
-                                    url: encodeURIComponent(State.lastretrievedreslist())
+                                    url: encodeURIComponent(State.lastretrievedreslist()) + '?complete=1'
                                 }).then(function (result) {
                                     State.lastreslistcontents = result
                                 })

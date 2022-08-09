@@ -59,6 +59,10 @@ async def pack(definition):
 @bp.route("/<definition>.json")
 async def pack_json(definition):
     """Download a reslist definition"""
+    complete = request.args.get("complete", False, type=bool)
+    import pprint
+
+    pprint.pprint(complete)
 
     await pack(definition)
 
