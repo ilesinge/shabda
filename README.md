@@ -45,6 +45,7 @@ With Estuary, Shabda makes use of this feature: https://github.com/dktr0/estuary
 To do
 -----
 
+- Move all this to github issues :)
 - Explain how to launch on codespace / how to make port public
 - Change allowed duration in definition ?
 - List API and view
@@ -60,3 +61,9 @@ To do
 - Extract percussive ?
   - https://librosa.org/doc/latest/generated/librosa.effects.hpss.html
 - Use advanced search in a funky way: https://freesound.org/docs/api/analysis_docs.html#analysis-docs
+- Fix refresh token method. Refresh regularly ?
+- Delete old samples (e.g. 7 days after last usage, note usage date)
+- Autorun pylint
+- Autorun pytest
+- Better cli interface (pack definition, licenses) 
+- pip module
