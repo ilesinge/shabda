@@ -51,6 +51,12 @@
             border: 2px solid #110072;
         }
 
+        #licenses {
+            display:inline-block;
+            vertical-align:top;
+            font-size: 0.75em;
+        }
+
         button, .button {
             display: inline-block;
             border: 2px solid #110072;
@@ -154,6 +160,23 @@
             lastretrieved: "",
             lastreslistcontents: [],
             error: "",
+            licenses: ["by", "cc0", "by-nc"],
+
+            haslicense: function(name) {
+                return State.licenses.includes(name)
+            },
+
+            setlicense: function(e) {
+                name = e.target.value
+                if (State.licenses.includes(name)) {
+                    State.licenses = State.licenses.filter(function(value, index, arr){ 
+                        return value != name;
+                    });
+                }
+                else {
+                    State.licenses.push(name)
+                }
+            },
 
             lastretrievedreslist: function () {
                 return this.lastretrieved + ".json"
@@ -173,7 +196,7 @@
                     State.progress = true
                     m.request({
                         method: "GET",
-                        url: "/pack/" + encodeURIComponent(State.pack)
+                        url: "/pack/" + encodeURIComponent(State.pack) + '?licenses=' + State.licenses.join()
                     })
                         .then(function (result) {
                             State.progress = false
@@ -238,6 +261,16 @@
                                 }
                             }
                         }),
+                        m("div#licenses", [
+                            m("input[type=checkbox]#license-cc0", {name: "licenses", value: "cc0", checked: State.haslicense("cc0"), oninput: State.setlicense}),
+                            m("label[for=license-cc0]", "Creative Commons Zero"),
+                            m("br"),
+                            m("input[type=checkbox]#license-by", {name: "licenses", value: "by", checked: State.haslicense("by"), oninput: State.setlicense}),
+                            m("label[for=license-by]", "Attribution"),
+                            m("br"),
+                            m("input[type=checkbox]#license-by-nc", {name: "licenses", value: "by-nc", checked: State.haslicense("by-nc"), oninput: State.setlicense}),
+                            m("label[for=license-by-nc]", "Attribution Noncommercial"),
+                        ]),
                         m("button", {
                             onclick: State.retrieve
                         }, "Fetch pack"),
