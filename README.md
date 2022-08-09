@@ -20,17 +20,17 @@ Install
 Use
 ---
 
-Execute in terminal `python3 shabda_cli.py <word1> <word2> <...> --num <number_of_sample_per_word>`
+Execute in terminal `pipenv run python shabda_cli.py <word1> <word2> <...> --num <number_of_sample_per_word>`
 
 ```
-python3 shabda_cli.py spaghetti monster --num 4
+pipenv run python shabda_cli.py spaghetti monster --num 4
 ```
 
 Launch the web application:
 
 In debug mode:
 ```
-FLASK_APP=shabda FLASK_ENV=development pipenv run flask run
+FLASK_APP=shabda FLASK_DEBUG=1 pipenv run flask run
 ```
 In production:
 ```
