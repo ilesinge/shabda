@@ -6,7 +6,7 @@ from glob import glob
 
 
 class SampleSet:
-    """LOL"""
+    """A set of sample files"""
 
     word = None
     master_id = None
@@ -32,6 +32,7 @@ class SampleSet:
         """Return the directory for this sample set"""
         return "samples/" + self.word
 
+    # TODO: instanciate Sound object (combination of config + files) ?
     def list(self, max_number=None):
         """List files for a sample name"""
         # accept None as a max_number
@@ -43,9 +44,23 @@ class SampleSet:
             filenames = filenames[0:max_number]
         return filenames
 
-    def add(self, sound_id):
+    def add(self, sound):
         """Add a sound to the sample set"""
-        self.sounds.append(sound_id)
+        self.sounds.append(
+            {
+                "id": sound.id,
+                "url": sound.url,
+                "username": sound.username,
+                "license": sound.licensename,
+            }
+        )
+
+    def contains(self, sound_id):
+        """Check if a sound id is contained in the sample set"""
+        for sound in self.sounds:
+            if sound["id"] == sound_id:
+                return True
+        return False
 
     def clean(self):
         """Clean the sample set"""

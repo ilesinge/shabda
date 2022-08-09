@@ -33,12 +33,14 @@ def home():
 @bp.route("/pack/<definition>")
 async def pack(definition):
     """Retrieve a pack of samples"""
+    licenses = request.args.get("licenses")
+
     tasks = []
     words = parse_definition(definition)
     for word, number in words.items():
         if number is None:
             number = 1
-        tasks.append(fetch_one(word, number))
+        tasks.append(fetch_one(word, number, licenses))
     results = await asyncio.gather(*tasks)
 
     global_status = "empty"
@@ -139,9 +141,9 @@ def cors_after(response):
     return response
 
 
-async def fetch_one(word, number):
+async def fetch_one(word, number, licenses):
     """Fetch a single sample set"""
-    return await dj.fetch(word, number)
+    return await dj.fetch(word, number, licenses)
 
 
 def parse_definition(definition):
