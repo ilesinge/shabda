@@ -36,7 +36,6 @@ class Dj:
         mastersound = None
         sampleset = SampleSet(word)
 
-        # TODO: filter out existing samples by license
         existing_samples = sampleset.list(num, licenses=licenses)
         existing_number = len(existing_samples)
         if existing_number >= num:
