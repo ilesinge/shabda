@@ -37,6 +37,13 @@ In production:
 pipenv run gunicorn --workers=4 "shabda:create_app()" -b localhost:8000
 ```
 
+Test
+----
+
+```
+pipenv run pytest
+```
+
 Notes
 -----
 
@@ -45,7 +52,7 @@ With Estuary, Shabda makes use of this feature: https://github.com/dktr0/estuary
 To do
 -----
 
-- Move all this to github issues :)
+- Move all this to github issues or project :)
 - Explain how to launch on codespace / how to make port public
 - Change allowed duration in definition ?
 - List API and view
