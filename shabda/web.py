@@ -60,9 +60,7 @@ async def pack(definition):
 async def pack_json(definition):
     """Download a reslist definition"""
     complete = request.args.get("complete", False, type=bool)
-    import pprint
-
-    pprint.pprint(complete)
+    licenses = request.args.get("licenses", None)
 
     await pack(definition)
 
@@ -73,17 +71,20 @@ async def pack_json(definition):
     words = parse_definition(definition)
     reslist = []
     for word, number in words.items():
-        samples = dj.list(word, number)
+        samples = dj.list(word, number, licenses=licenses)
         sample_num = 0
-        for sampleurl in samples:
-            reslist.append(
-                {
-                    "url": sampleurl,
-                    "type": "audio",
-                    "bank": word,
-                    "n": sample_num,
-                }
-            )
+        for sound in samples:
+            sound_data = {
+                "url": sound.file,
+                "type": "audio",
+                "bank": word,
+                "n": sample_num,
+            }
+            if complete:
+                sound_data["licensename"] = sound.licensename
+                sound_data["original_url"] = sound.url
+                sound_data["author"] = sound.username
+            reslist.append(sound_data)
             sample_num += 1
 
     return jsonify(reslist)

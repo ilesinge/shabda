@@ -2,6 +2,7 @@
 
 import os
 from shabda.sampleset import SampleSet
+from shabda.sound import Sound
 
 
 def test_init_new():
@@ -34,6 +35,7 @@ def test_add(mocker):
     sound.username = "bob"
     sound.licensename = "cc0"
     sound.url = "https://sample/"
+    sound.file = "samples/tchak/0.wav"
     sample = SampleSet("test1")
     sample.add(sound)
     assert {
@@ -41,15 +43,26 @@ def test_add(mocker):
         "username": "bob",
         "license": "cc0",
         "url": "https://sample/",
+        "file": "samples/tchak/0.wav",
     } in sample.sounds
 
 
 def test_list(fake_filesystem):
     """List samples"""
-    fake_filesystem.create_file("samples/test1/0.wav")
+    fake_filesystem.create_file(
+        "samples/test1/config",
+        contents='{"master": 1, "sounds": [{"id": 337514, "url": "https://freesound.org/people/eardeer/sounds/337514/", "username": "eardeer", "license": "Attribution", "file": "samples/test1/0.wav"}]}',
+    )
 
     sample = SampleSet("test1")
-    assert sample.list() == ["samples/test1/0.wav"]
+
+    assert sample.list()[0].__dict__ == {
+        "id": 337514,
+        "url": "https://freesound.org/people/eardeer/sounds/337514/",
+        "username": "eardeer",
+        "licensename": "Attribution",
+        "file": "samples/test1/0.wav",
+    }
 
 
 def test_clean(fake_filesystem):  # pylint:disable=unused-argument

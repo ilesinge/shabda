@@ -26,11 +26,10 @@ class Dj:
     def __init__(self):
         self.client = Client()
 
-    # TODO: allow to filter out unwanted licenses
-    def list(self, word, max_number=None):
+    def list(self, word, max_number=None, licenses=None):
         """List files for a sample name"""
         sampleset = SampleSet(word)
-        return sampleset.list(max_number)
+        return sampleset.list(max_number, licenses=licenses)
 
     async def fetch(self, word, num, licenses):
         """Fetch a collection of samples"""
@@ -38,7 +37,7 @@ class Dj:
         sampleset = SampleSet(word)
 
         # TODO: filter out existing samples by license
-        existing_samples = sampleset.list(num)
+        existing_samples = sampleset.list(num, licenses=licenses)
         existing_number = len(existing_samples)
         if existing_number >= num:
             return True
@@ -70,7 +69,7 @@ class Dj:
 
         ssounds = []
         for result in similar:
-            ssound = Sound(result)
+            ssound = Sound(freesound=result)
             if existing_number >= num:
                 break
             if result.id == mastersound.id:
@@ -179,7 +178,8 @@ class Dj:
             sound = self.trim(sound)
             sound.export(export_path, format="wav")
 
-            shabdasound = Sound(ssound)
+            shabdasound = Sound(freesound=ssound)
+            shabdasound.file = export_path
             sampleset.add(shabdasound)
             print("Sample " + word_dir + "#" + str(sample_num) + " downloaded!")
         except pydub.exceptions.CouldntDecodeError as exception:

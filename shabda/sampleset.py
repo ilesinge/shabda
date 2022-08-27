@@ -3,6 +3,7 @@
 import os
 import json
 from glob import glob
+from shabda.sound import Sound
 
 
 class SampleSet:
@@ -32,17 +33,18 @@ class SampleSet:
         """Return the directory for this sample set"""
         return "samples/" + self.word
 
-    # TODO: instanciate Sound object (combination of config + files) ?
-    def list(self, max_number=None):
-        """List files for a sample name"""
+    def list(self, max_number=None, licenses=None):
+        """List sounds for a sample name"""
         # accept None as a max_number
-        filenames = []
-        if os.path.exists(self.dir()):
-            filenames = filenames + glob(self.dir() + "/*.wav")
-        filenames.sort()
+
+        sounds = []
+        for sound in self.sounds:
+            if licenses is None or sound["license"] in licenses:
+                sounds.append(Sound(configsound=sound))
         if max_number is not None:
-            filenames = filenames[0:max_number]
-        return filenames
+            sounds = sounds[0:max_number]
+
+        return sounds
 
     def add(self, sound):
         """Add a sound to the sample set"""
@@ -52,6 +54,7 @@ class SampleSet:
                 "url": sound.url,
                 "username": sound.username,
                 "license": sound.licensename,
+                "file": sound.file,
             }
         )
 
