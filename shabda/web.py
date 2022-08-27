@@ -34,6 +34,8 @@ def home():
 async def pack(definition):
     """Retrieve a pack of samples"""
     licenses = request.args.get("licenses")
+    if licenses is not None:
+        licenses = licenses.split(",")
 
     tasks = []
     words = parse_definition(definition)
@@ -61,6 +63,8 @@ async def pack_json(definition):
     """Download a reslist definition"""
     complete = request.args.get("complete", False, type=bool)
     licenses = request.args.get("licenses", None)
+    if licenses is not None:
+        licenses = licenses.split(",")
 
     await pack(definition)
 
