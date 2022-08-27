@@ -18,7 +18,7 @@ async def main():
 
     dj = Dj()
     for word in args.word:
-        await dj.fetch(word, args.num)
+        await dj.fetch(word, args.num, licenses=[])
 
     print("")
     print("Done!")
