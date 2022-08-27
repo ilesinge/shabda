@@ -1,6 +1,6 @@
 """A single sound file and mappings from Freesound"""
 
-# TODO: make that a wrapper around Freesound object
+
 class Sound:
     """A sound file"""
 
