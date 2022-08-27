@@ -15,6 +15,7 @@ from termcolor import colored
 from shabda.display import print_error
 from shabda.client import Client
 from shabda.sampleset import SampleSet
+from shabda.sound import Sound
 
 
 class Dj:
@@ -25,55 +26,59 @@ class Dj:
     def __init__(self):
         self.client = Client()
 
-    def list(self, word, max_number=None):
+    def list(self, word, max_number=None, licenses=None):
         """List files for a sample name"""
         sampleset = SampleSet(word)
-        return sampleset.list(max_number)
+        return sampleset.list(max_number, licenses=licenses)
 
-    async def fetch(self, word, num):
+    async def fetch(self, word, num, licenses):
         """Fetch a collection of samples"""
-        sound = None
+        mastersound = None
         sampleset = SampleSet(word)
 
-        existing_samples = sampleset.list(num)
+        # TODO: filter out existing samples by license
+        existing_samples = sampleset.list(num, licenses=licenses)
         existing_number = len(existing_samples)
         if existing_number >= num:
             return True
 
         master_id = sampleset.master_id
         if master_id:
-            sound = self.client.get_sound(
+            mastersound = self.client.get_sound(
                 master_id, fields="id,name,type,duration,previews"
             )
             print(colored("Master sound exists...", "green"))
 
-        if not sound:
-            sound = await self.search_master_sound(word)
+        if not mastersound:
+            mastersound = await self.search_master_sound(word)
 
-        if not sound:
+        if not mastersound:
             sampleset.clean()
             return False
 
-        sampleset.master_id = sound.id
+        sampleset.master_id = mastersound.id
 
-        print("Sound found: " + sound.name)
+        print("Sound found: " + mastersound.name)
 
-        similar = sound.get_similar(
-            fields="id,name,type,duration,previews",
-            page_size=50,
+        similar = mastersound.get_similar(
+            fields="id,name,type,duration,previews,license,username,url",
+            page_size=100,
         )
 
         print("Found " + str(len(similar.results)) + " similar sounds.")
 
         ssounds = []
         for result in similar:
+            ssound = Sound(freesound=result)
             if existing_number >= num:
                 break
-            if result.id == sound.id:
+            if result.id == mastersound.id:
                 continue
             if result.duration > 5:
                 continue
-            if result.id in sampleset.sounds:
+            if sampleset.contains(result.id):
+                continue
+            if len(licenses) and not ssound.licensename in licenses:
                 continue
             ssounds.append(result)
             existing_number += 1
@@ -115,9 +120,9 @@ class Dj:
                 partial(
                     self.client.text_search,
                     query=word,
-                    fields="id,name,type,duration,previews",
+                    fields="id,name,type,duration,previews,license,username,url",
                     page_size=10,
-                    filter="duration:[* TO 1]",
+                    filter='duration:[* TO 1] license:"Creative Commons 0"',
                 ),
             )
 
@@ -146,7 +151,7 @@ class Dj:
 
         return trim_trailing_silence(trim_leading_silence(sound))
 
-    async def download(self, sampleset, ssound, sample_num):
+    async def download(self, sampleset: SampleSet, ssound, sample_num):
         """Download a sample, normalize and cut it"""
 
         def match_target_amplitude(sound, target_dbfs):
@@ -173,7 +178,9 @@ class Dj:
             sound = self.trim(sound)
             sound.export(export_path, format="wav")
 
-            sampleset.add(ssound.id)
+            shabdasound = Sound(freesound=ssound)
+            shabdasound.file = export_path
+            sampleset.add(shabdasound)
             print("Sample " + word_dir + "#" + str(sample_num) + " downloaded!")
         except pydub.exceptions.CouldntDecodeError as exception:
             print_error("Error while decoding source file", exception)

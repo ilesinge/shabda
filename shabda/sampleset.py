@@ -3,10 +3,11 @@
 import os
 import json
 from glob import glob
+from shabda.sound import Sound
 
 
 class SampleSet:
-    """LOL"""
+    """A set of sample files"""
 
     word = None
     master_id = None
@@ -32,20 +33,37 @@ class SampleSet:
         """Return the directory for this sample set"""
         return "samples/" + self.word
 
-    def list(self, max_number=None):
-        """List files for a sample name"""
+    def list(self, max_number=None, licenses=None):
+        """List sounds for a sample name"""
         # accept None as a max_number
-        filenames = []
-        if os.path.exists(self.dir()):
-            filenames = filenames + glob(self.dir() + "/*.wav")
-        filenames.sort()
-        if max_number is not None:
-            filenames = filenames[0:max_number]
-        return filenames
 
-    def add(self, sound_id):
+        sounds = []
+        for sound in self.sounds:
+            if licenses is None or sound["license"] in licenses:
+                sounds.append(Sound(configsound=sound))
+        if max_number is not None:
+            sounds = sounds[0:max_number]
+
+        return sounds
+
+    def add(self, sound):
         """Add a sound to the sample set"""
-        self.sounds.append(sound_id)
+        self.sounds.append(
+            {
+                "id": sound.id,
+                "url": sound.url,
+                "username": sound.username,
+                "license": sound.licensename,
+                "file": sound.file,
+            }
+        )
+
+    def contains(self, sound_id):
+        """Check if a sound id is contained in the sample set"""
+        for sound in self.sounds:
+            if sound["id"] == sound_id:
+                return True
+        return False
 
     def clean(self):
         """Clean the sample set"""

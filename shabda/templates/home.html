@@ -51,6 +51,12 @@
             border: 2px solid #110072;
         }
 
+        #licenses {
+            display:inline-block;
+            vertical-align:top;
+            font-size: 0.75em;
+        }
+
         button, .button {
             display: inline-block;
             border: 2px solid #110072;
@@ -119,6 +125,16 @@
             background-color: #ccb9ff;
         }
 
+        .attribution {
+            display:inline-block;
+            padding-top: 10px;
+            vertical-align: top;
+            font-size: 0.7em;
+        }
+        .attribution img {
+            vertical-align: auto;
+        }
+
         .samples {
             list-style-type: none;
             padding: 0;
@@ -154,6 +170,31 @@
             lastretrieved: "",
             lastreslistcontents: [],
             error: "",
+            licenses: ["by", "cc0", "by-nc"],
+
+            licensefullname: function(name) {
+                switch (name) {
+                    case 'cc0': return "Public domain"
+                    case 'by': return "Attribution"
+                    case 'by-nc': return "Attribution non-commercial"
+                }
+            },
+
+            haslicense: function(name) {
+                return State.licenses.includes(name)
+            },
+
+            setlicense: function(e) {
+                name = e.target.value
+                if (State.licenses.includes(name)) {
+                    State.licenses = State.licenses.filter(function(value, index, arr){ 
+                        return value != name;
+                    });
+                }
+                else {
+                    State.licenses.push(name)
+                }
+            },
 
             lastretrievedreslist: function () {
                 return this.lastretrieved + ".json"
@@ -164,7 +205,7 @@
             },
 
             lastreslist: function () {
-                return '!reslist "' + location.href + State.lastretrievedreslist() + '"'
+                return '!reslist "' + location.href + State.lastretrievedreslist() + (State.licenses.length < 3 ? "?licenses=" + State.licenses.join() : "") + '"'
             },
 
             retrieve: function () {
@@ -173,7 +214,7 @@
                     State.progress = true
                     m.request({
                         method: "GET",
-                        url: "/pack/" + encodeURIComponent(State.pack)
+                        url: "/pack/" + encodeURIComponent(State.pack) + '?licenses=' + State.licenses.join()
                     })
                         .then(function (result) {
                             State.progress = false
@@ -181,7 +222,7 @@
                                 State.lastretrieved = result.definition
                                 m.request({
                                     method: "GET",
-                                    url: encodeURIComponent(State.lastretrievedreslist())
+                                    url: encodeURIComponent(State.lastretrievedreslist()) + '?complete=1&licenses=' + State.licenses.join()
                                 }).then(function (result) {
                                     State.lastreslistcontents = result
                                 })
@@ -238,6 +279,16 @@
                                 }
                             }
                         }),
+                        m("div#licenses", [
+                            m("input[type=checkbox]#license-cc0", {name: "licenses", value: "cc0", checked: State.haslicense("cc0"), oninput: State.setlicense}),
+                            m("label[for=license-cc0]", State.licensefullname("cc0")),
+                            m("br"),
+                            m("input[type=checkbox]#license-by", {name: "licenses", value: "by", checked: State.haslicense("by"), oninput: State.setlicense}),
+                            m("label[for=license-by]", State.licensefullname("by")),
+                            m("br"),
+                            m("input[type=checkbox]#license-by-nc", {name: "licenses", value: "by-nc", checked: State.haslicense("by-nc"), oninput: State.setlicense}),
+                            m("label[for=license-by-nc]", State.licensefullname("by-nc")),
+                        ]),
                         m("button", {
                             onclick: State.retrieve
                         }, "Fetch pack"),
@@ -280,7 +331,7 @@
                                                     soundlist = []
                                                     for (index in State.lastreslistcontents) {
                                                         sound = State.lastreslistcontents[index]
-                                                        soundlist.push(m('li', m('audio', { controls: true, src: sound.url })))
+                                                        soundlist.push(m('li', m('audio', { controls: true, src: sound.url }), " ", m('span.attribution', State.licensefullname(sound.licensename) + ' by ' + sound.author + ' ', m('a', {'href': sound.original_url}, m('img', { src: 'assets/external-link.png'})))))
                                                     }
                                                     return soundlist
                                                 }()),

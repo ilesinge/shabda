@@ -20,21 +20,28 @@ Install
 Use
 ---
 
-Execute in terminal `python3 shabda_cli.py <word1> <word2> <...> --num <number_of_sample_per_word>`
+Execute in terminal `pipenv run python shabda_cli.py <word1> <word2> <...> --num <number_of_sample_per_word>`
 
 ```
-python3 shabda_cli.py spaghetti monster --num 4
+pipenv run python shabda_cli.py spaghetti monster --num 4
 ```
 
 Launch the web application:
 
 In debug mode:
 ```
-FLASK_APP=shabda FLASK_ENV=development pipenv run flask run
+FLASK_APP=shabda FLASK_DEBUG=1 pipenv run flask run
 ```
 In production:
 ```
 pipenv run gunicorn --workers=4 "shabda:create_app()" -b localhost:8000
+```
+
+Test
+----
+
+```
+pipenv run pytest
 ```
 
 Notes
@@ -45,6 +52,7 @@ With Estuary, Shabda makes use of this feature: https://github.com/dktr0/estuary
 To do
 -----
 
+- Move all this to github issues or project :)
 - Explain how to launch on codespace / how to make port public
 - Change allowed duration in definition ?
 - List API and view
@@ -60,3 +68,9 @@ To do
 - Extract percussive ?
   - https://librosa.org/doc/latest/generated/librosa.effects.hpss.html
 - Use advanced search in a funky way: https://freesound.org/docs/api/analysis_docs.html#analysis-docs
+- Fix refresh token method. Refresh regularly ?
+- Delete old samples (e.g. 7 days after last usage, note usage date)
+- Autorun pylint
+- Autorun pytest
+- Better cli interface (pack definition, licenses) 
+- pip module

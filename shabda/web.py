@@ -33,12 +33,16 @@ def home():
 @bp.route("/pack/<definition>")
 async def pack(definition):
     """Retrieve a pack of samples"""
+    licenses = request.args.get("licenses")
+    if licenses is not None:
+        licenses = licenses.split(",")
+
     tasks = []
     words = parse_definition(definition)
     for word, number in words.items():
         if number is None:
             number = 1
-        tasks.append(fetch_one(word, number))
+        tasks.append(fetch_one(word, number, licenses))
     results = await asyncio.gather(*tasks)
 
     global_status = "empty"
@@ -57,6 +61,10 @@ async def pack(definition):
 @bp.route("/<definition>.json")
 async def pack_json(definition):
     """Download a reslist definition"""
+    complete = request.args.get("complete", False, type=bool)
+    licenses = request.args.get("licenses", None)
+    if licenses is not None:
+        licenses = licenses.split(",")
 
     await pack(definition)
 
@@ -67,17 +75,20 @@ async def pack_json(definition):
     words = parse_definition(definition)
     reslist = []
     for word, number in words.items():
-        samples = dj.list(word, number)
+        samples = dj.list(word, number, licenses=licenses)
         sample_num = 0
-        for sampleurl in samples:
-            reslist.append(
-                {
-                    "url": sampleurl,
-                    "type": "audio",
-                    "bank": word,
-                    "n": sample_num,
-                }
-            )
+        for sound in samples:
+            sound_data = {
+                "url": sound.file,
+                "type": "audio",
+                "bank": word,
+                "n": sample_num,
+            }
+            if complete:
+                sound_data["licensename"] = sound.licensename
+                sound_data["original_url"] = sound.url
+                sound_data["author"] = sound.username
+            reslist.append(sound_data)
             sample_num += 1
 
     return jsonify(reslist)
@@ -139,9 +150,9 @@ def cors_after(response):
     return response
 
 
-async def fetch_one(word, number):
+async def fetch_one(word, number, licenses):
     """Fetch a single sample set"""
-    return await dj.fetch(word, number)
+    return await dj.fetch(word, number, licenses)
 
 
 def parse_definition(definition):
