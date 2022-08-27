@@ -162,8 +162,6 @@ class Dj:
         try:
             source_name = str(sample_num) + "-source"
             source_path = word_dir + "/" + source_name
-            export_name = str(sample_num) + ".wav"
-            export_path = word_dir + "/" + export_name
 
             print("Dowloading " + word_dir + " sample #" + str(sample_num) + "...")
             loop = asyncio.get_event_loop()
@@ -176,6 +174,13 @@ class Dj:
             sound = match_target_amplitude(sound, -20.0)
 
             sound = self.trim(sound)
+            export_num = sample_num
+            while True:
+                export_name = str(export_num) + ".wav"
+                export_path = word_dir + "/" + export_name
+                if not os.path.exists(export_path):
+                    break
+                export_num += 1
             sound.export(export_path, format="wav")
 
             shabdasound = Sound(freesound=ssound)
