@@ -38,7 +38,11 @@ async def pack(definition):
         licenses = licenses.split(",")
 
     tasks = []
-    words = parse_definition(definition)
+    try:
+        words = dj.parse_definition(definition)
+    except ValueError as ex:
+        raise BadRequest(ex) from ex
+
     for word, number in words.items():
         if number is None:
             number = 1
@@ -72,7 +76,10 @@ async def pack_json(definition):
     base = url.scheme + "://" + url.hostname
     if url.port:
         base += ":" + str(url.port)
-    words = parse_definition(definition)
+    try:
+        words = dj.parse_definition(definition)
+    except ValueError as ex:
+        raise BadRequest(ex) from ex
     reslist = []
     for word, number in words.items():
         samples = dj.list(word, number, licenses=licenses)
@@ -97,7 +104,10 @@ async def pack_json(definition):
 @bp.route("/<definition>.zip")
 def pack_zip(definition):
     """Download a zip archive"""
-    words = parse_definition(definition)
+    try:
+        words = dj.parse_definition(definition)
+    except ValueError as ex:
+        raise BadRequest(ex) from ex
     definition = clean_definition(words)
     tmpfile = tempfile.gettempdir() + "/" + definition + ".zip"
     with ZipFile(tmpfile, "w") as zipfile:
@@ -153,32 +163,6 @@ def cors_after(response):
 async def fetch_one(word, number, licenses):
     """Fetch a single sample set"""
     return await dj.fetch(word, number, licenses)
-
-
-def parse_definition(definition):
-    """Parse a pack definition"""
-    words = {}
-    sections = definition.split(",")
-    for section in sections:
-        parts = section.split(":")
-        rawword = parts[0]
-        word = "".join(ch for ch in rawword if ch.isalnum())
-        if len(word) == 0:
-            raise BadRequest("A sample name is required")
-        number = None
-        if len(parts) > 1:
-            try:
-                number = int(parts[1])
-            except ValueError as exception:
-                raise BadRequest(
-                    "A valid sample number is required after the colon"
-                ) from exception
-            if number < 1:
-                raise BadRequest("A sample number must be greater than 0")
-            if number > 10:
-                raise BadRequest("A sample number must be less than 11")
-        words[word] = number
-    return words
 
 
 def clean_definition(words):

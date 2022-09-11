@@ -17,14 +17,25 @@ Install
 - Install dependencies: `pipenv install`
 - Install ffmpeg: https://ffmpeg.org/ (e.g. Debian/Ubuntu: `apt install ffmpeg`)
 
-Use
----
+Use (command line)
+------------------
 
-Execute in terminal `pipenv run python shabda_cli.py <word1> <word2> <...> --num <number_of_sample_per_word>`
+In order to download a sample pack, execute in the terminal `pipenv run python shabda_cli.py <definition> --licenses <license_name>`.
 
+Any word can be a pack definition. If you want more than one sample, separate words by a comma: `blue,red`
+
+You can define how many variations of a sample to assemble by adding a colon and a number.
+e.g. `blue,red:3,yellow:2` will produce one 'blue' sample, three 'red' samples and two 'yellow' sample.
+
+The optional `--licenses` parameter allows to fetch only samples that have the specified license. Multiple licenses can be allowed by repeating the `--licenses` argument. Possible licenses are `cc0` (Creative Commons Zero), `by` (Creative Commons Attribution), and `by-nc` (Creative Commons Attribution Non-Commercial).
+
+Full example:
 ```
-pipenv run python shabda_cli.py spaghetti monster --num 4
+pipenv run python shabda_cli.py spaghetti:2,monster:4 --licenses cc0 --licenses by
 ```
+
+Use (web application)
+---------------------
 
 Launch the web application:
 

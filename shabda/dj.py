@@ -26,6 +26,31 @@ class Dj:
     def __init__(self):
         self.client = Client()
 
+    def parse_definition(self, definition):
+        """Parse a pack definition"""
+        words = {}
+        sections = definition.split(",")
+        for section in sections:
+            parts = section.split(":")
+            rawword = parts[0]
+            word = "".join(ch for ch in rawword if ch.isalnum())
+            if len(word) == 0:
+                raise ValueError("A sample name is required")
+            number = None
+            if len(parts) > 1:
+                try:
+                    number = int(parts[1])
+                except ValueError as exception:
+                    raise ValueError(
+                        "A valid sample number is required after the colon"
+                    ) from exception
+                if number < 1:
+                    raise ValueError("A sample number must be greater than 0")
+                if number > 10:
+                    raise ValueError("A sample number must be less than 11")
+            words[word] = number
+        return words
+
     def list(self, word, max_number=None, licenses=None):
         """List files for a sample name"""
         sampleset = SampleSet(word)
