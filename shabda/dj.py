@@ -200,7 +200,7 @@ class Dj:
             sound = self.trim(sound)
             export_num = sample_num
             while True:
-                export_name = str(export_num) + ".wav"
+                export_name = sampleset.word + "_" + str(export_num) + ".wav"
                 export_path = word_dir + "/" + export_name
                 if not os.path.exists(export_path):
                     break
