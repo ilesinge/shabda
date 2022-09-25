@@ -80,6 +80,11 @@ To do
   - https://librosa.org/doc/latest/generated/librosa.effects.hpss.html
 - Use advanced search in a funky way: https://freesound.org/docs/api/analysis_docs.html#analysis-docs
 - Fix refresh token method. Refresh regularly ?
+- Enforce all alpha minuscules and numbers in pack definition
+- Generate speech ;
+    - via external cli ? https://linuxhint.com/command-line-text-speech-apps-linux/
+    - via python lib ? https://pypi.org/project/pyttsx3/
+    - via TTS API? https://rapidapi.com/collection/best-text-to-speech-apis
 - Delete old samples (e.g. 7 days after last usage, note usage date)
 - Autorun pylint
 - Autorun pytest
