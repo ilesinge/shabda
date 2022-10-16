@@ -5,6 +5,9 @@ import json
 from glob import glob
 from shabda.sound import Sound
 
+FREESOUND = 1
+TTS = 2
+
 
 class SampleSet:
     """A set of sample files"""
@@ -12,10 +15,12 @@ class SampleSet:
     word = None
     master_id = None
     sounds = []
+    type = FREESOUND
 
-    def __init__(self, word):
+    def __init__(self, word, soundtype=FREESOUND):
         """Initialize the sample set"""
         self.word = word
+        self.type = soundtype
         directory = self.dir()
         if not os.path.exists(directory):
             os.makedirs(directory)
@@ -31,15 +36,22 @@ class SampleSet:
 
     def dir(self):
         """Return the directory for this sample set"""
-        return "samples/" + self.word
+        directory = "samples/" + self.word
+        if self.type == TTS:
+            directory = "speech_" + directory
+        return directory
 
-    def list(self, max_number=None, licenses=None):
+    def list(self, max_number=None, licenses=None, gender=None, language=None):
         """List sounds for a sample name"""
         # accept None as a max_number
 
         sounds = []
         for sound in self.sounds:
-            if licenses is None or sound["license"] in licenses:
+            if (
+                (licenses is None or sound["license"] in licenses)
+                and (gender is None or sound["gender"] == gender)
+                and (language is None or sound["language"] == language)
+            ):
                 sounds.append(Sound(configsound=sound))
         if max_number is not None:
             sounds = sounds[0:max_number]
@@ -55,6 +67,8 @@ class SampleSet:
                 "username": sound.username,
                 "license": sound.licensename,
                 "file": sound.file,
+                "gender": sound.gender,
+                "language": sound.language,
             }
         )
 

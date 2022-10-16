@@ -9,8 +9,10 @@ class Sound:
     url = None
     licensename = None
     file = None
+    language = None
+    gender = None
 
-    def __init__(self, freesound=None, configsound=None):
+    def __init__(self, freesound=None, configsound=None, speechsound=None):
         if freesound is not None:
             self.id = freesound.id
             self.username = freesound.username
@@ -22,6 +24,10 @@ class Sound:
             self.url = configsound["url"]
             self.licensename = configsound["license"]
             self.file = configsound["file"]
+        if speechsound is not None:
+            self.language = speechsound["language"]
+            self.gender = speechsound["gender"]
+            self.file = speechsound["file"]
 
     def _translate_license(self, licenseurl):
         """Translate a license URL into a license  name"""

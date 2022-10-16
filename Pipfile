@@ -11,6 +11,7 @@ requests = "*"
 "flask[async]" = "*"
 gunicorn = "*"
 typer = {extras = ["all"], version = "*"}
+google-cloud-texttospeech = "*"
 
 [dev-packages]
 pylint = "*"

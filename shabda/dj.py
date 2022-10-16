@@ -14,8 +14,9 @@ import pydub
 from termcolor import colored
 from shabda.display import print_error
 from shabda.client import Client
-from shabda.sampleset import SampleSet
+from shabda.sampleset import FREESOUND, SampleSet, TTS
 from shabda.sound import Sound
+from google.cloud import texttospeech
 
 
 class Dj:
@@ -33,7 +34,7 @@ class Dj:
         for section in sections:
             parts = section.split(":")
             rawword = parts[0]
-            word = "".join(ch for ch in rawword if ch.isalnum())
+            word = "".join(ch for ch in rawword if ch.isalnum() or ch == "_")
             if len(word) == 0:
                 raise ValueError("A sample name is required")
             number = None
@@ -51,10 +52,73 @@ class Dj:
             words[word] = number
         return words
 
-    def list(self, word, max_number=None, licenses=None):
+    def list(
+        self,
+        word,
+        max_number=None,
+        licenses=None,
+        gender=None,
+        language=None,
+        soundtype=None,
+    ):
         """List files for a sample name"""
-        sampleset = SampleSet(word)
-        return sampleset.list(max_number, licenses=licenses)
+        if soundtype == "tts":
+            stype = TTS
+        else:
+            stype = FREESOUND
+        sampleset = SampleSet(word, stype)
+        return sampleset.list(
+            max_number, licenses=licenses, gender=gender, language=language
+        )
+
+    async def speak(self, word, language, gender):
+        """Speak a word"""
+        sampleset = SampleSet(word, TTS)
+        existing_samples = sampleset.list()
+        if len(existing_samples) > 0:
+            return True
+        word_dir = sampleset.dir()
+        client = texttospeech.TextToSpeechClient()
+        synthesis_input = texttospeech.SynthesisInput(text=word.replace("_", " "))
+        # mini hack
+        if language == "en-GB" and gender == "f":
+            voice = texttospeech.VoiceSelectionParams(
+                name="en-GB-Neural2-A",
+                language_code="en-GB",
+                ssml_gender=texttospeech.SsmlVoiceGender.FEMALE,
+            )
+            # speaking_rate=0.85
+            # pitch=-4
+        else:
+            if gender == "m":
+                ssml_gender = texttospeech.SsmlVoiceGender.MALE
+            else:
+                ssml_gender = texttospeech.SsmlVoiceGender.FEMALE
+            voice = texttospeech.VoiceSelectionParams(
+                language_code=language,
+                ssml_gender=ssml_gender,
+            )
+        audio_config = texttospeech.AudioConfig(
+            audio_encoding=texttospeech.AudioEncoding.LINEAR16,
+            # speaking_rate=0.85,
+            # pitch=-4,
+        )
+        response = client.synthesize_speech(
+            input=synthesis_input, voice=voice, audio_config=audio_config
+        )
+        filepath = word_dir + "/" + word + "_0.wav"
+        with open(filepath, "wb") as out:
+            out.write(response.audio_content)
+        sound = Sound(
+            speechsound={
+                "gender": gender,
+                "language": language,
+                "file": filepath,
+            }
+        )
+        sampleset.add(sound)
+        sampleset.saveconfig()
+        return True
 
     async def fetch(self, word, num, licenses):
         """Fetch a collection of samples"""
