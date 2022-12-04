@@ -1,0 +1,151 @@
+body {
+    background-color: #b4fccc;
+    color: #110072;
+    font-family: sans-serif;
+    padding: 20px 50px;
+}
+
+.help img,
+.help p {
+    float: left;
+}
+
+.help p {
+    margin-left: 10px;
+    margin-top: 0px;
+}
+
+.pack-container {
+    clear: both;
+    padding: 1px;
+}
+
+.explanation {
+    font-size: 0.8em;
+    font-style: italic;
+}
+
+#definition {
+    border: 2px dotted #110072;
+    border-radius: 5px;
+    padding: 10px;
+    margin: 10px;
+    background-color: transparent;
+    color: #110072;
+}
+
+#definition:focus {
+    outline: none;
+    border: 2px solid #110072;
+}
+
+#licenses {
+    display: inline-block;
+    vertical-align: top;
+    font-size: 0.75em;
+}
+
+button,
+.button {
+    display: inline-block;
+    border: 2px solid #110072;
+    border-radius: 5px;
+    box-shadow: 3px 3px 2px #110072;
+    padding: 10px;
+    margin: 10px;
+    color: #110072;
+    cursor: pointer;
+    background-color: white;
+    text-decoration-line: none;
+    font-size: 14px;
+}
+
+button:hover,
+.button:hover {
+    background-color: rgb(208, 208, 215);
+}
+
+button:active,
+.button:active {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 2px #110072;
+}
+
+button img,
+.button img {
+    vertical-align: top;
+}
+
+.pack {
+    padding: 0 10px;
+}
+
+.latest pre {
+    display: inline;
+    margin-right: 5px;
+    padding: 2px;
+    border: 1px dotted #110072;
+}
+
+.latest img {
+    vertical-align: bottom;
+    cursor: pointer;
+}
+
+.copied {
+    margin-left: 5px;
+    opacity: 0;
+    animation: fade 2s;
+    font-size: 0.8em;
+}
+
+@keyframes fade {
+    0% {
+        opacity: 0;
+    }
+
+    25% {
+        opacity: 0.5;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+audio::-webkit-media-controls-panel {
+    background-color: #ccb9ff;
+}
+
+.attribution {
+    display: inline-block;
+    padding-top: 10px;
+    vertical-align: top;
+    font-size: 0.7em;
+}
+
+.attribution img {
+    vertical-align: auto;
+}
+
+.samples {
+    list-style-type: none;
+    padding: 0;
+}
+
+@supports (-moz-appearance:none) {
+    audio {
+        opacity: 0.8;
+        border-radius: 20px;
+    }
+}
+
+.footer {
+    text-align: right;
+    font-size: 12px;
+}
+
+.footer a {
+    color: #110072;
+    text-decoration: none;
+}
