@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "shabda"
-version = "0.1.0"
+version = "0.1.0.1"
 description = "A semantic audio samples curator for livecoding software"
 authors = ["Alexandre G.-Raymond <alex@ndre.gr>"]
 license = "MIT"
