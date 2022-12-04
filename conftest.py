@@ -1,3 +1,5 @@
+"""pyfakefs fixture renaming"""
+
 import pytest
 
 

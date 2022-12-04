@@ -14,7 +14,7 @@ class Sound:
 
     def __init__(self, freesound=None, configsound=None, speechsound=None):
         if freesound is not None:
-            self.id = freesound.id
+            self.id = freesound.id  # pylint:disable=invalid-name
             self.username = freesound.username
             self.url = freesound.url
             self.licensename = self._translate_license(freesound.license)
