@@ -1,7 +1,7 @@
 Shabda
 ======
 
-![Shabda logo](assets/logo.png)
+![Shabda logo](https://raw.githubusercontent.com/ilesinge/shabda/master/assets/logo.png)
 
 
 Shabda is a tool to fetch random samples from https://freesound.org/ based on given words, for use in impro sessions on instruments such as Tidal Cycles and Estuary.
