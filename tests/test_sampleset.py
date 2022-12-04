@@ -2,11 +2,9 @@
 
 import os
 from shabda.sampleset import SampleSet
-from shabda.sound import Sound
-from pyfakefs.fake_filesystem_unittest import patchfs
 
 
-def test_init_new(fake_filesystem):
+def test_init_new(fake_filesystem):  # pylint:disable=unused-argument
     """Initialize non existing sample"""
     SampleSet("test1")
     assert os.path.exists("samples/test1/")
@@ -23,13 +21,13 @@ def test_init_existing(fake_filesystem):
     assert sample.sounds == [2, 3]
 
 
-def test_dir(fake_filesystem):
+def test_dir(fake_filesystem):  # pylint:disable=unused-argument
     """Check sample directory"""
     sample = SampleSet("test1")
     assert sample.dir() == "samples/test1"
 
 
-def test_add(mocker, fake_filesystem):
+def test_add(mocker, fake_filesystem):  # pylint:disable=unused-argument
     """Add a sample"""
     sound = mocker.Mock()
     sound.id = 4
@@ -56,7 +54,9 @@ def test_list(fake_filesystem):
     """List samples"""
     fake_filesystem.create_file(
         "samples/test1/config",
-        contents='{"master": 1, "sounds": [{"id": 337514, "url": "https://freesound.org/people/eardeer/sounds/337514/", "username": "eardeer", "license": "Attribution", "file": "samples/test1/0.wav"}]}',
+        contents="""{"master": 1, "sounds": [{"id": 337514, "url":
+            "https://freesound.org/people/eardeer/sounds/337514/", "username": "eardeer",
+            "license": "Attribution", "file": "samples/test1/0.wav"}]}""",
     )
 
     sample = SampleSet("test1")
@@ -77,7 +77,7 @@ def test_clean(fake_filesystem):  # pylint:disable=unused-argument
     assert not os.path.exists("samples/test1/")
 
 
-def test_saveconfig(fake_filesystem):
+def test_saveconfig(fake_filesystem):  # pylint:disable=unused-argument
     """Saving sample config file"""
     sample = SampleSet("test1")
     sample.master_id = 1
@@ -103,7 +103,7 @@ def test_saveconfig(fake_filesystem):
     ]
 
 
-def test_contains(fake_filesystem):
+def test_contains(fake_filesystem):  # pylint:disable=unused-argument
     """Checking if sample set contains a sound id"""
     sample = SampleSet("test1")
     sample.master_id = 1
