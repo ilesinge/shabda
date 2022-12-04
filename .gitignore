@@ -3,3 +3,4 @@ token_data
 shabda.code-workspace
 __pycache__
 ansible/
+dist/

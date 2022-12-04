@@ -1,10 +1,8 @@
-from setuptools import setup
+#!/usr/bin/env python
 
-setup(
-    name="Shabda",
-    version="1.0",
-    long_description=__doc__,
-    packages=["shabda"],
-    include_package_data=True,
-    zip_safe=False,
-)
+"""Shabda setup"""
+
+import setuptools
+
+if __name__ == "__main__":
+    setuptools.setup()

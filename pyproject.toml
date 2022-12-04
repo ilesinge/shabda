@@ -1,0 +1,45 @@
+[tool.poetry]
+name = "shabda"
+version = "0.1.0"
+description = "A semantic audio samples curator for livecoding software"
+authors = ["Alexandre G.-Raymond <alex@ndre.gr>"]
+license = "MIT"
+readme = "README.md"
+homepage = "https://shabda.ndre.gr/"
+repository = "https://github.com/ilesinge/shabda"
+keywords = ["music", "livecoding", "tidalcycles"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: End Users/Desktop",
+    "Topic :: Multimedia :: Sound/Audio",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.10",
+]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+freesound-api = "*"
+pydub = "*"
+termcolor = "*"
+requests = "*"
+flask = {extras = ["async"], version = "*"}
+gunicorn = "*"
+typer = {extras = ["all"], version = "*"}
+google-cloud-texttospeech = "*"
+
+[tool.poetry.dev-dependencies]
+pylint = "*"
+black = "*"
+pytest = "*"
+pyfakefs = "*"
+pytest-mock = "*"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+shabda = "shabda_cli:cli"
+
+[tool.poetry.urls]
+"Bug Tracker" = "https://github.com/ilesinge/shabda/issues"
