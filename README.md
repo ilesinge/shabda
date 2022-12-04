@@ -60,33 +60,7 @@ Notes
 
 With Estuary, Shabda makes use of this feature: https://github.com/dktr0/estuary/wiki#adding-sound-files-to-estuarywebdirt-on-the-fly
 
-To do
+Roadmap
 -----
 
-- Move all this to github issues or project :)
-- Explain how to launch on codespace / how to make port public
-- Change allowed duration in definition ?
-- List API and view
-- Solidify: Retry, Queue workers, queue status?
-  - https://huey.readthedocs.io/en/latest/index.html
-  - https://github.com/litements/litequeue
-  - (but with those there is no way to know a queue's status?)
-- Explain risks about throttling: https://freesound.org/docs/api/overview.html
-- Allow to rename sample ?
-  - Allow emojis in sample name ?
-  - Allow spaces in sample name ? special unicode spaces ? Reverse ?
-- Record your voice
-- Extract percussive ?
-  - https://librosa.org/doc/latest/generated/librosa.effects.hpss.html
-- Use advanced search in a funky way: https://freesound.org/docs/api/analysis_docs.html#analysis-docs
-- Fix refresh token method. Refresh regularly ?
-- Enforce all alpha minuscules and numbers in pack definition
-- Generate speech ;
-    - via external cli ? https://linuxhint.com/command-line-text-speech-apps-linux/
-    - via python lib ? https://pypi.org/project/pyttsx3/
-    - via TTS API? https://rapidapi.com/collection/best-text-to-speech-apis
-- Delete old samples (e.g. 7 days after last usage, note usage date)
-- Autorun pylint
-- Autorun pytest
-- Better cli interface (pack definition, licenses) 
-- pip module
+See: https://github.com/users/ilesinge/projects/4
