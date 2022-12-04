@@ -12,20 +12,23 @@ import urllib
 import freesound
 import pydub
 from termcolor import colored
+from google.cloud import texttospeech
+
 from shabda.display import print_error
 from shabda.client import Client
 from shabda.sampleset import FREESOUND, SampleSet, TTS
 from shabda.sound import Sound
-from google.cloud import texttospeech
 
 
 class Dj:
     """Shabda engine"""
 
     client = None
+    samples_path = ""
 
-    def __init__(self):
-        self.client = Client()
+    def __init__(self, config_path="", samples_path=""):
+        self.client = Client(config_path)
+        self.samples_path = samples_path
 
     def parse_definition(self, definition):
         """Parse a pack definition"""
@@ -66,14 +69,14 @@ class Dj:
             stype = TTS
         else:
             stype = FREESOUND
-        sampleset = SampleSet(word, stype)
+        sampleset = SampleSet(word, stype, self.samples_path)
         return sampleset.list(
             max_number, licenses=licenses, gender=gender, language=language
         )
 
     async def speak(self, word, language, gender):
         """Speak a word"""
-        sampleset = SampleSet(word, TTS)
+        sampleset = SampleSet(word, TTS, self.samples_path)
         existing_samples = sampleset.list()
         if len(existing_samples) > 0:
             return True
@@ -123,7 +126,7 @@ class Dj:
     async def fetch(self, word, num, licenses):
         """Fetch a collection of samples"""
         mastersound = None
-        sampleset = SampleSet(word)
+        sampleset = SampleSet(word, samples_path=self.samples_path)
 
         existing_samples = sampleset.list(num, licenses=licenses)
         existing_number = len(existing_samples)

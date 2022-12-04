@@ -1,6 +1,8 @@
 """Freesound client"""
 import json
 import webbrowser
+import os
+
 import requests
 import freesound
 
@@ -13,10 +15,16 @@ class Client:
     FS_CLIENT_ID = "vPkOlpykBDA4fU9fzGmE"
     token_data = {}
     client = None
+    path = ""
 
-    def __init__(self):
+    def __init__(self, path):
+        self.path = path
+        if len(path):
+            os.makedirs(self.path, exist_ok=True)
         try:
-            with open("token_data", "r", encoding="UTF-8") as file:
+            with open(
+                os.path.join(self.path, "token_data"), "r", encoding="UTF-8"
+            ) as file:
                 self.token_data = json.load(file)
         except IOError:
             self.token_data = {}
@@ -52,10 +60,12 @@ class Client:
             "grant_type": "authorization_code",
             "code": code,
         }
-        response = requests.post(url, params)
+        response = requests.post(url, params, timeout=5)
         if response.status_code == 200:
             self.token_data = response.json()
-            with open("token_data", "w", encoding="UTF-8") as file:
+            with open(
+                os.path.join(self.path, "token_data"), "w", encoding="UTF-8"
+            ) as file:
                 json.dump(self.token_data, file)
         else:
             raise Exception("An error occured while getting access token.", response)
@@ -74,10 +84,12 @@ class Client:
                     "grant_type": "refresh_token",
                     "refresh_token": self.token_data["refresh_token"],
                 }
-                response = requests.post(url, params)
+                response = requests.post(url, params, timeout=5)
                 if response.status_code == 200:
                     self.token_data = response.json()
-                    with open("token_data", "w", encoding="UTF-8") as file:
+                    with open(
+                        os.path.join(self.path, "token_data"), "w", encoding="UTF-8"
+                    ) as file:
                         json.dump(self.token_data, file)
                     self.client.set_token(self.token_data["access_token"], "oauth")
                 else:

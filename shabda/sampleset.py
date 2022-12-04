@@ -16,11 +16,13 @@ class SampleSet:
     master_id = None
     sounds = []
     type = FREESOUND
+    samples_path = ""
 
-    def __init__(self, word, soundtype=FREESOUND):
+    def __init__(self, word, soundtype=FREESOUND, samples_path="samples"):
         """Initialize the sample set"""
         self.word = word
         self.type = soundtype
+        self.samples_path = samples_path
         directory = self.dir()
         if not os.path.exists(directory):
             os.makedirs(directory)
@@ -36,9 +38,9 @@ class SampleSet:
 
     def dir(self):
         """Return the directory for this sample set"""
-        directory = "samples/" + self.word
+        directory = os.path.join(self.samples_path, self.word)
         if self.type == TTS:
-            directory = "speech_" + directory
+            directory = os.path.join(self.samples_path, "speech_" + directory)
         return directory
 
     def list(self, max_number=None, licenses=None, gender=None, language=None):
