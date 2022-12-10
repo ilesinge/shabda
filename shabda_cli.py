@@ -6,7 +6,7 @@
 import asyncio
 from typing import List
 from enum import Enum
-from os import path
+import os
 from configparser import ConfigParser
 
 import typer
@@ -16,13 +16,14 @@ from rich import print as richprint
 from shabda.dj import Dj
 
 
-shabda_path = path.expanduser("~/.shabda/")
+shabda_path = os.path.expanduser("~/.shabda/")
 config_file = shabda_path + "config.ini"
+os.makedirs(shabda_path, exist_ok=True)
 open(config_file, "a+", encoding="utf-8").close()
 config_parser = ConfigParser()
 config_parser.read(config_file)
 
-samples_path = config_parser.get("shabda", "samples_path", fallback="")
+samples_path = config_parser.get("shabda", "samples_path", fallback="samples/")
 
 err_console = Console(stderr=True)
 
