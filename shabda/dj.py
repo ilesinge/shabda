@@ -173,7 +173,7 @@ class Dj:
                 continue
             if sampleset.contains(result.id):
                 continue
-            if len(licenses) and not ssound.licensename in licenses:
+            if licenses and len(licenses) and not ssound.licensename in licenses:
                 continue
             ssounds.append(result)
             existing_number += 1
