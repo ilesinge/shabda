@@ -120,7 +120,30 @@ def pack_zip(definition):
         for word, number in words.items():
             samples = dj.list(word, number)
             for sample in samples:
-                zipfile.write(sample, sample[len("samples/") :])
+                zipfile.write(sample.file, sample.file[len("samples/") :])
+
+    @after_this_request
+    def remove_file(response):
+        os.remove(tmpfile)
+        return response
+
+    return send_file(tmpfile, as_attachment=True)
+
+
+@bp.route("/speech/<definition>.zip")
+def speech_zip(definition):
+    """Download a zip archive"""
+    definition = definition.replace(" ", "_")
+    try:
+        words = dj.parse_definition(definition)
+    except ValueError as ex:
+        raise BadRequest(ex) from ex
+    tmpfile = tempfile.gettempdir() + "/" + definition + ".zip"
+    with ZipFile(tmpfile, "w") as zipfile:
+        for word, number in words.items():
+            samples = dj.list(word, number, soundtype="tts")
+            for sample in samples:
+                zipfile.write(sample.file, sample.file[len("speech_samples/") :])
 
     @after_this_request
     def remove_file(response):
