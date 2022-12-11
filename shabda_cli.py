@@ -24,10 +24,13 @@ config_parser = ConfigParser()
 config_parser.read(config_file)
 
 samples_path = config_parser.get("shabda", "samples_path", fallback="samples/")
+speech_sample_path = config_parser.get(
+    "shabda", "speech_sample_path", fallback="speech_samples/"
+)
 
 err_console = Console(stderr=True)
 
-dj = Dj(shabda_path, samples_path)
+dj = Dj(shabda_path, samples_path, speech_sample_path)
 
 
 class License(str, Enum):
