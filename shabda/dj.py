@@ -25,10 +25,12 @@ class Dj:
 
     client = None
     samples_path = ""
+    speech_samples_path = ""
 
-    def __init__(self, config_path="", samples_path=""):
+    def __init__(self, config_path="", samples_path="", speech_samples_path=""):
         self.client = Client(config_path)
         self.samples_path = samples_path
+        self.speech_samples_path = speech_samples_path
 
     def parse_definition(self, definition):
         """Parse a pack definition"""
@@ -67,16 +69,18 @@ class Dj:
         """List files for a sample name"""
         if soundtype == "tts":
             stype = TTS
+            path = self.speech_samples_path
         else:
             stype = FREESOUND
-        sampleset = SampleSet(word, stype, self.samples_path)
+            path = self.samples_path
+        sampleset = SampleSet(word, stype, path)
         return sampleset.list(
             max_number, licenses=licenses, gender=gender, language=language
         )
 
     async def speak(self, word, language, gender):
         """Speak a word"""
-        sampleset = SampleSet(word, TTS, self.samples_path)
+        sampleset = SampleSet(word, TTS, self.speech_samples_path)
         existing_samples = sampleset.list()
         if len(existing_samples) > 0:
             return True

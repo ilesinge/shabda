@@ -1,11 +1,12 @@
 """Shabda web routes"""
 
 import asyncio
+import os
 from urllib.parse import urlparse
 import json
-import os
 from zipfile import ZipFile
 import tempfile
+
 from flask import (
     Blueprint,
     jsonify,
@@ -19,9 +20,14 @@ from werkzeug.exceptions import BadRequest, HTTPException
 from shabda.dj import Dj
 
 
+SHABDA_PATH = os.path.expanduser("~/.shabda/")
+
+SAMPLES_PATH = "samples/"
+SPEECH_SAMPLE_PATH = "speech_samples/"
+
 bp = Blueprint("web", __name__, url_prefix="/")
 
-dj = Dj()
+dj = Dj(SHABDA_PATH, SAMPLES_PATH, SPEECH_SAMPLE_PATH)
 
 
 @bp.route("/")
@@ -186,7 +192,8 @@ async def speech_json(definition):
     return jsonify(reslist)
 
 
-@bp.route("speech/speech_samples/<path:path>")
+@bp.route("/speech_samples/<path:path>")
+@bp.route("/speech/speech_samples/<path:path>")
 def serve_sample(path):
     """Serve a sample"""
     return send_from_directory("../speech_samples/", path, as_attachment=False)
