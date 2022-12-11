@@ -40,8 +40,6 @@ class SampleSet:
     def dir(self):
         """Return the directory for this sample set"""
         directory = os.path.join(self.samples_path, self.word)
-        if self.type == TTS:
-            directory = os.path.join(self.samples_path, "speech_" + directory)
         return directory
 
     def list(self, max_number=None, licenses=None, gender=None, language=None):
