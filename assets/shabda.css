@@ -25,7 +25,8 @@ body {
     font-style: italic;
 }
 
-#definition {
+#definition,
+#speechdefinition {
     border: 2px dotted #110072;
     border-radius: 5px;
     padding: 10px;
@@ -34,15 +35,48 @@ body {
     color: #110072;
 }
 
-#definition:focus {
+#definition:focus,
+#speechdefinition:focus {
     outline: none;
     border: 2px solid #110072;
+}
+
+.clear {
+    clear: both;
 }
 
 #licenses {
     display: inline-block;
     vertical-align: top;
     font-size: 0.75em;
+}
+
+#genders {
+    display: inline-block;
+}
+
+#languages {
+    display: inline-block;
+    margin-left: 10px;
+}
+
+#tabs span {
+    display: inline-block;
+    padding: 10px;
+    border: 1px solid #110072;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    cursor: pointer;
+    background-color: #00000033;
+}
+
+#tabs span.selected {
+    border-bottom: none;
+    background-color: transparent;
+}
+
+.tabcontent {
+    display: none;
 }
 
 button,
