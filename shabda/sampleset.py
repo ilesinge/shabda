@@ -26,6 +26,7 @@ class SampleSet:
         directory = self.dir()
         if not os.path.exists(directory):
             os.makedirs(directory)
+            self.sounds = []
         else:
             try:
                 with open(directory + "/config", encoding="utf-8") as config_file:
