@@ -149,7 +149,7 @@ var Shabda = {
                 m("br"),
                 "It fetches samples from ",
                 m("a", { href: "https://freesound.org/" }, "freesound.org"),
-                " based on given words, for use in impro sessions on instruments such as ",
+                " based on given words or generates Text-to-Speech samples, for use in impro sessions on instruments such as ",
                 m("a", { href: "https://tidalcycles.org/" }, "Tidal Cycles"),
                 " and ",
                 m("a", { href: "https://estuary.mcmaster.ca/" }, "Estuary"),
