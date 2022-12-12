@@ -4,7 +4,7 @@ Shabda
 ![Shabda logo](https://raw.githubusercontent.com/ilesinge/shabda/master/assets/logo.png)
 
 
-Shabda is a tool to fetch random samples from https://freesound.org/ based on given words, for use in impro sessions on instruments such as Tidal Cycles and Estuary.
+Shabda is a tool to fetch random samples from https://freesound.org/ based on given words or to generate Text-to-Speech samples for use in impro sessions on instruments such as Tidal Cycles and Estuary.
 
 [Shabda](https://en.wikipedia.org/wiki/Shabda) is the Sanskrit word for "speech sound". In Sanskrit grammar, the term refers to an utterance in the sense of linguistic performance. 
 
@@ -14,7 +14,7 @@ Install
 - Install Python 3: https://www.python.org/
 - Install pip: https://pypi.org/project/pip/
 - Install ffmpeg: https://ffmpeg.org/ (e.g. Debian/Ubuntu: `apt install ffmpeg`)
-- Install Shabda for simple usage: `pip install shabda`
+- Install Shabda for standard usage: `pip install shabda`
 or
 - Install shabda for hacking:
     - Install poetry: https://python-poetry.org/docs/#installation
