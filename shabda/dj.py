@@ -81,7 +81,7 @@ class Dj:
     async def speak(self, word, language, gender):
         """Speak a word"""
         sampleset = SampleSet(word, TTS, self.speech_samples_path)
-        existing_samples = sampleset.list()
+        existing_samples = sampleset.list(language=language, gender=gender)
         if len(existing_samples) > 0:
             return True
         word_dir = sampleset.dir()
@@ -113,7 +113,7 @@ class Dj:
         response = client.synthesize_speech(
             input=synthesis_input, voice=voice, audio_config=audio_config
         )
-        filepath = word_dir + "/" + word + "_0.wav"
+        filepath = word_dir + "/" + word + "_" + language + "_" + gender + ".wav"
         with open(filepath, "wb") as out:
             out.write(response.audio_content)
         sound = Sound(
