@@ -18,6 +18,7 @@ from shabda.display import print_error
 from shabda.client import Client
 from shabda.sampleset import FREESOUND, SampleSet, TTS
 from shabda.sound import Sound
+import shabda.chatter as chatter
 
 
 class Dj:
@@ -87,6 +88,14 @@ class Dj:
         word_dir = sampleset.dir()
         client = texttospeech.TextToSpeechClient()
         synthesis_input = texttospeech.SynthesisInput(text=word.replace("_", " "))
+
+        if gender == "f":
+            ssml_gender = texttospeech.SsmlVoiceGender.FEMALE
+        else:
+            ssml_gender = texttospeech.SsmlVoiceGender.MALE
+
+        voice_name = chatter.pick_voice(language, ssml_gender, client)
+
         # mini hack
         if language == "en-GB" and gender == "f":
             voice = texttospeech.VoiceSelectionParams(
@@ -97,18 +106,11 @@ class Dj:
             # speaking_rate=0.85
             # pitch=-4
         else:
-            if gender == "m":
-                ssml_gender = texttospeech.SsmlVoiceGender.MALE
-            else:
-                ssml_gender = texttospeech.SsmlVoiceGender.FEMALE
             voice = texttospeech.VoiceSelectionParams(
-                language_code=language,
-                ssml_gender=ssml_gender,
+                name=voice_name, language_code=language
             )
         audio_config = texttospeech.AudioConfig(
             audio_encoding=texttospeech.AudioEncoding.LINEAR16,
-            # speaking_rate=0.85,
-            # pitch=-4,
         )
         response = client.synthesize_speech(
             input=synthesis_input, voice=voice, audio_config=audio_config

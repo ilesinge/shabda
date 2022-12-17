@@ -1,11 +1,14 @@
+"""Shabda init"""
+
 from flask import Flask
+
 from shabda.dj import Dj
+from . import web
 
 
 def create_app():
+    """Create the Flask application"""
     app = Flask(__name__)
-
-    from . import web
 
     app.register_blueprint(web.bp)
 
