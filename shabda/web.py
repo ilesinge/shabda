@@ -204,7 +204,8 @@ async def speech_json(definition):
     await speech(definition)
 
     url = urlparse(request.base_url)
-    base = url.scheme + "://" + url.hostname
+    # base = url.scheme + "://" + url.hostname
+    base = "https://" + url.hostname
     if url.port:
         base += ":" + str(url.port)
     base += "/"
