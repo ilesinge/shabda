@@ -4,7 +4,7 @@ Shabda
 ![Shabda logo](https://raw.githubusercontent.com/ilesinge/shabda/master/assets/logo.png)
 
 
-Shabda is a tool to fetch random samples from https://freesound.org/ based on given words or to generate Text-to-Speech samples for use in impro sessions on instruments such as Tidal Cycles and Estuary.
+Shabda is a tool to fetch random samples from https://freesound.org/ based on given words or to generate Text-to-Speech samples for use in impro sessions on instruments such as Tidal Cycles, Estuary or Strudel.
 
 [Shabda](https://en.wikipedia.org/wiki/Shabda) is the Sanskrit word for "speech sound". In Sanskrit grammar, the term refers to an utterance in the sense of linguistic performance. 
 

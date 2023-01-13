@@ -73,6 +73,7 @@ async def pack_json(definition):
     """Download a reslist definition"""
     complete = request.args.get("complete", False, type=bool)
     licenses = request.args.get("licenses", None)
+    strudel = request.args.get("strudel", False, type=bool)
     if licenses is not None:
         licenses = licenses.split(",")
 
@@ -82,27 +83,36 @@ async def pack_json(definition):
     base = url.scheme + "://" + url.hostname
     if url.port:
         base += ":" + str(url.port)
+    base += "/"
     try:
         words = dj.parse_definition(definition)
     except ValueError as ex:
         raise BadRequest(ex) from ex
-    reslist = []
+    if strudel:
+        reslist = {"_base": base}
+    else:
+        reslist = []
     for word, number in words.items():
         samples = dj.list(word, number, licenses=licenses)
         sample_num = 0
         for sound in samples:
-            sound_data = {
-                "url": sound.file,
-                "type": "audio",
-                "bank": word,
-                "n": sample_num,
-            }
-            if complete:
-                sound_data["licensename"] = sound.licensename
-                sound_data["original_url"] = sound.url
-                sound_data["author"] = sound.username
-            reslist.append(sound_data)
-            sample_num += 1
+            if strudel:
+                if word not in reslist:
+                    reslist[word] = []
+                reslist[word].append(sound.file)
+            else:
+                sound_data = {
+                    "url": sound.file,
+                    "type": "audio",
+                    "bank": word,
+                    "n": sample_num,
+                }
+                if complete:
+                    sound_data["licensename"] = sound.licensename
+                    sound_data["original_url"] = sound.url
+                    sound_data["author"] = sound.username
+                reslist.append(sound_data)
+                sample_num += 1
 
     return jsonify(reslist)
 
@@ -184,6 +194,7 @@ async def speech(definition):
 @bp.route("/speech/<definition>.json")
 async def speech_json(definition):
     """Download a reslist definition"""
+    strudel = request.args.get("strudel", False, type=bool)
     gender = request.args.get("gender", "f")
     language = request.args.get("language", "en-GB")
     definition = definition.replace(" ", "_")
@@ -194,23 +205,32 @@ async def speech_json(definition):
     base = url.scheme + "://" + url.hostname
     if url.port:
         base += ":" + str(url.port)
+    base += "/"
     try:
         words = dj.parse_definition(definition)
     except ValueError as ex:
         raise BadRequest(ex) from ex
-    reslist = []
+    if strudel:
+        reslist = {"_base": base}
+    else:
+        reslist = []
     for word in words:
         samples = dj.list(word, gender=gender, language=language, soundtype="tts")
         sample_num = 0
         for sound in samples:
-            sound_data = {
-                "url": sound.file,
-                "type": "audio",
-                "bank": word,
-                "n": sample_num,
-            }
-            reslist.append(sound_data)
-            sample_num += 1
+            if strudel:
+                if word not in reslist:
+                    reslist[word] = []
+                reslist[word].append(sound.file)
+            else:
+                sound_data = {
+                    "url": sound.file,
+                    "type": "audio",
+                    "bank": word,
+                    "n": sample_num,
+                }
+                reslist.append(sound_data)
+                sample_num += 1
 
     return jsonify(reslist)
 

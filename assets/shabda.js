@@ -45,15 +45,23 @@ var State = {
         return window.location + this.lastretrieved + ".zip"
     },
 
-    lastreslist: function () {
-        reslist = '!reslist "' + location.href + State.lastretrievedreslist()
+    lastreslist: function (strudel = false) {
+        url = new URL(location.href + State.lastretrievedreslist())
         if (this.lastretrievedtype == "pack" && State.licenses.length < 3) {
-            reslist = reslist + "?licenses=" + State.licenses.join()
+            url.searchParams.append("licenses", State.licenses.join());
         }
         if (this.lastretrievedtype == "speech") {
-            reslist = reslist + "?gender=" + State.gender + "&language=" + State.language
+            url.searchParams.append("gender", State.gender)
+            url.searchParams.append("language", State.language)
         }
-        reslist = reslist + '"'
+        if (strudel) {
+            url.searchParams.append("strudel", 1)
+            reslist = "samples('" + url.href + "')"
+        }
+        else {
+            reslist = '!reslist "' + url.href + '"'
+        }
+
         return reslist
     },
 
@@ -92,16 +100,30 @@ var State = {
         }
     },
 
-    copyreslist: function () {
+    copyreslist: function (strudel = false) {
         if (navigator && navigator.clipboard && navigator.clipboard.writeText) {
-            if (navigator.clipboard.writeText(State.lastreslist())) {
-                State.copied = true
+            if (navigator.clipboard.writeText(State.lastreslist(strudel))) {
+                if (strudel) {
+                    State.strudelcopied = true
+                }
+                else {
+                    State.copied = true
+                }
             }
         }
-        setTimeout(function () {
-            State.copied = false
-            m.redraw()
-        }, 2000)
+        if (strudel) {
+            setTimeout(function () {
+                State.strudelcopied = false
+                m.redraw()
+            }, 2000)
+        }
+        else {
+            setTimeout(function () {
+                State.copied = false
+                m.redraw()
+            }, 2000)
+        }
+
     },
 
     retrievespeech: function () {
@@ -151,8 +173,10 @@ var Shabda = {
                 m("a", { href: "https://freesound.org/" }, "freesound.org"),
                 " based on given words or generates Text-to-Speech samples, for use in impro sessions on instruments such as ",
                 m("a", { href: "https://tidalcycles.org/" }, "Tidal Cycles"),
-                " and ",
+                ", ",
                 m("a", { href: "https://estuary.mcmaster.ca/" }, "Estuary"),
+                " and ",
+                m("a", { href: "https://strudel.tidalcycles.org/" }, "Strudel"),
                 "."]),
 
             m("div",
@@ -214,7 +238,9 @@ var Shabda = {
                             m("br"),
                             m("br"),
                             "In a hurry? You can directly include a pack in Estuary by executing in its terminal:",
-                            m("pre", '!reslist "' + location.href + 'blue,red.json"')
+                            m("pre", '!reslist "' + location.href + 'blue,red.json"'),
+                            "Or in Strudel:",
+                            m("pre", "samples('" + location.href + "blue,red.json?strudel=1')")
                         ]),
                     ])
                 ]),
@@ -315,7 +341,9 @@ var Shabda = {
                             m("br"),
                             m("br"),
                             "In a hurry? You can directly include speech in Estuary by executing in its terminal:",
-                            m("pre", '!reslist "' + location.href + 'speech/blue,red.json?gender=f&language=en-GB"')
+                            m("pre", '!reslist "' + location.href + 'speech/blue,red.json?gender=f&language=en-GB"'),
+                            "Or in Strudel:",
+                            m("pre", "samples('" + location.href + "speech/blue,red.json?gender=f&language=en-GB&strudel=1')")
                         ]),
                     ])
                 ]),
@@ -328,11 +356,16 @@ var Shabda = {
                                 m("img", { src: "assets/infinity.svg" }) :
                                 State.lastretrieved ?
                                     m("div.latest", [
-                                        "Insert in Estuary terminal: ",
-                                        m("br"),
+                                        m("small", "Insert in Estuary terminal: "),
                                         m("pre", State.lastreslist()),
-                                        m("img", { onclick: State.copyreslist, src: "assets/clipboard.png", height: "16" }),
+                                        m("img", { onclick: function () { State.copyreslist() }, src: "assets/clipboard.png", height: "16" }),
                                         State.copied ? m("span.copied", "copied") : null,
+                                        m("br"),
+                                        m("br"),
+                                        m("small", "Insert in Strudel: "),
+                                        m("pre", State.lastreslist(true)),
+                                        m("img", { onclick: function () { State.copyreslist(true) }, src: "assets/clipboard.png", height: "16" }),
+                                        State.strudelcopied ? m("span.copied", "copied") : null,
                                         m('ul.samples', function () {
                                             soundlist = []
                                             for (index in State.lastreslistcontents) {
