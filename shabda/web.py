@@ -80,6 +80,8 @@ async def pack_json(definition):
     await pack(definition)
 
     url = urlparse(request.base_url)
+    # SORRY :( QUICK HACK TO SUPPORT MY REVERSE PROXY
+    url.scheme = "https"
     base = url.scheme + "://" + url.hostname
     if url.port:
         base += ":" + str(url.port)
