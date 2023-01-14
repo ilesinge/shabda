@@ -394,7 +394,7 @@ var Shabda = {
                 [
                     m('a', { href: "https://github.com/ilesinge/shabda", title: "Source code" }, m('img', { src: "assets/github.png", height: "16px" })),
                     ' by ',
-                    m('a', { href: "https://twitter.com/ilesinge" }, 'ilesinge')
+                    m('a', { href: "https://mastodon.sdf.org/@detour" }, 'ilesinge')
                 ]
             )
         ])
