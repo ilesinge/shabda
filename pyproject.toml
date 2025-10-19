@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "shabda"
-version = "0.2.2.0"
+version = "0.2.2.1"
 description = "A semantic audio samples curator for livecoding software"
 authors = ["Alexandre G.-Raymond <alex@ndre.gr>"]
 license = "MIT"
@@ -15,7 +15,6 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3.10",
 ]
-include = ["shabda_cli.py"]
 
 [tool.poetry.dependencies]
 python = "^3.10"
@@ -40,7 +39,7 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
-shabda = "shabda_cli:cli"
+shabda = "shabda.cli:cli"
 
 [tool.poetry.urls]
 "Bug Tracker" = "https://github.com/ilesinge/shabda/issues"
