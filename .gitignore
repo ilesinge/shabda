@@ -4,3 +4,5 @@ shabda.code-workspace
 __pycache__
 ansible/
 dist/
+shabda_cli.bin
+shabda_cli.build

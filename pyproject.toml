@@ -28,7 +28,7 @@ gunicorn = "*"
 typer = {extras = ["all"], version = "*"}
 google-cloud-texttospeech = "*"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 pylint = "*"
 black = "*"
 pytest = "*"
