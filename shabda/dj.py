@@ -6,6 +6,7 @@
 from functools import partial
 import random
 import os
+import re
 import asyncio
 import urllib
 
@@ -81,8 +82,10 @@ class Dj:
 
     async def speak(self, word, language, gender):
         """Speak a word"""
+        # Only allow safe characters: letters, digits, underscore, dash
+        language_sanitized = re.sub(r'[^\w\-]', '', language)
         sampleset = SampleSet(word, TTS, self.speech_samples_path)
-        existing_samples = sampleset.list(language=language, gender=gender)
+        existing_samples = sampleset.list(language=language_sanitized, gender=gender)
         if len(existing_samples) > 0:
             return True
         word_dir = sampleset.dir()
@@ -94,10 +97,10 @@ class Dj:
         else:
             ssml_gender = texttospeech.SsmlVoiceGender.MALE
 
-        voice_name = chatter.pick_voice(language, ssml_gender, client)
+        voice_name = chatter.pick_voice(language_sanitized, ssml_gender, client)
 
         # mini hack
-        if language == "en-GB" and gender == "f":
+        if language_sanitized == "en-GB" and gender == "f":
             voice = texttospeech.VoiceSelectionParams(
                 name="en-GB-Neural2-A",
                 language_code="en-GB",
@@ -107,7 +110,7 @@ class Dj:
             # pitch=-4
         else:
             voice = texttospeech.VoiceSelectionParams(
-                name=voice_name, language_code=language
+                name=voice_name, language_code=language_sanitized
             )
         audio_config = texttospeech.AudioConfig(
             audio_encoding=texttospeech.AudioEncoding.LINEAR16,
@@ -115,13 +118,13 @@ class Dj:
         response = client.synthesize_speech(
             input=synthesis_input, voice=voice, audio_config=audio_config
         )
-        filepath = word_dir + "/" + word + "_" + language + "_" + gender + ".wav"
+        filepath = word_dir + "/" + word + "_" + language_sanitized + "_" + gender + ".wav"
         with open(filepath, "wb") as out:
             out.write(response.audio_content)
         sound = Sound(
             speechsound={
                 "gender": gender,
-                "language": language,
+                "language": language_sanitized,
                 "file": filepath,
             }
         )
