@@ -240,7 +240,7 @@ var Shabda = {
                             "In a hurry? You can directly include a pack in Estuary by executing in its terminal:",
                             m("pre", '!reslist "' + location.href + 'blue,red.json"'),
                             "Or in Strudel:",
-                            m("pre", "samples('" + location.href + "blue,red.json?strudel=1')")
+                            m("pre", "samples('shabda:blue:2,red:3')")
                         ]),
                     ])
                 ]),
@@ -343,7 +343,7 @@ var Shabda = {
                             "In a hurry? You can directly include speech in Estuary by executing in its terminal:",
                             m("pre", '!reslist "' + location.href + 'speech/blue,red.json?gender=f&language=en-GB"'),
                             "Or in Strudel:",
-                            m("pre", "samples('" + location.href + "speech/blue,red.json?gender=f&language=en-GB&strudel=1')")
+                            m("pre", "samples('shabda/speech/en-GB/f:blue,red')")
                         ]),
                     ])
                 ]),
