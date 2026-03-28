@@ -186,8 +186,8 @@ var Shabda = {
     view: function () {
         return m("main", [
             !State.freesoundAvailable ? m("div#freesound-banner", [
-                "⚠ Freesound is currently unreachable. Sample fetching is disabled. ",
-                m("strong", "Cached samples and speech generation remain available."),
+                "⚠ Freesound is currently unreachable. New sample fetching is disabled. ",
+                m("strong", "Existing samples and speech generation remain available."),
             ]) : null,
 
             m("h1", [m("img", { src: "assets/logo.svg", height: "40", title: 'Shabda is the Sanskrit word for "speech sound"' }), "Shabda"]),
