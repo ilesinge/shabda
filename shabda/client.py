@@ -9,6 +9,10 @@ import freesound
 from termcolor import colored
 
 
+class FreesoundUnavailableError(Exception):
+    """Raised when Freesound is unreachable or its API cannot be contacted."""
+
+
 class Client:
     """Freesound client"""
 
@@ -29,6 +33,12 @@ class Client:
         except IOError:
             self.token_data = {}
         if "access_token" not in self.token_data:
+            try:
+                requests.head("https://freesound.org", timeout=5)
+            except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as exc:
+                raise FreesoundUnavailableError(
+                    "Freesound is unreachable and no stored token is available."
+                ) from exc
             self._authorize()
 
         self.client = freesound.FreesoundClient()
@@ -84,7 +94,12 @@ class Client:
                     "grant_type": "refresh_token",
                     "refresh_token": self.token_data["refresh_token"],
                 }
-                response = requests.post(url, params, timeout=5)
+                try:
+                    response = requests.post(url, params, timeout=5)
+                except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as exc:
+                    raise FreesoundUnavailableError(
+                        "Freesound is unreachable (token refresh failed)."
+                    ) from exc
                 if response.status_code == 200:
                     self.token_data = response.json()
                     with open(
@@ -97,7 +112,14 @@ class Client:
                         "An error occured while refreshing access token.", response
                     ) from exception
             else:
-                raise exception
+                raise FreesoundUnavailableError(
+                    f"Freesound is unreachable: {exception}"
+                ) from exception
+        except (OSError, Exception) as exc:
+            # Catch network-level errors (socket errors, etc.) from the freesound SDK
+            raise FreesoundUnavailableError(
+                f"Freesound is unreachable: {exc}"
+            ) from exc
 
     def __getattr__(self, attr):
         def wrapped_method(*args, **kwargs):

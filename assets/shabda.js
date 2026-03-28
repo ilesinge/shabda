@@ -12,6 +12,19 @@ var State = {
     language: "uk-UA",
     gender: "f",
     tab: "pack",
+    freesoundAvailable: true,
+    freesoundError: null,
+
+    pollStatus: function () {
+        m.request({ method: "GET", url: "/status" })
+            .then(function (result) {
+                State.freesoundAvailable = result.freesound.available
+                State.freesoundError = result.freesound.error
+            })
+            .catch(function () {
+                // If /status itself fails, leave the current state unchanged
+            })
+    },
 
     licensefullname: function (name) {
         switch (name) {
@@ -92,7 +105,14 @@ var State = {
                         State.error = "An error occured"
                     }
                 }).catch(function (error) {
-                    State.error = "An error occured"
+                    State.progress = false
+                    if (error.code === 503 && error.response && error.response.status === "freesound_unavailable") {
+                        State.error = "Freesound is currently unavailable. Try again later."
+                        State.freesoundAvailable = false
+                        State.freesoundError = error.response.error
+                    } else {
+                        State.error = "An error occured"
+                    }
                 })
         }
         else {
@@ -165,6 +185,11 @@ var State = {
 var Shabda = {
     view: function () {
         return m("main", [
+            !State.freesoundAvailable ? m("div#freesound-banner", [
+                "⚠ Freesound is currently unreachable. Sample fetching is disabled. ",
+                m("strong", "Cached samples and speech generation remain available."),
+            ]) : null,
+
             m("h1", [m("img", { src: "assets/logo.svg", height: "40", title: 'Shabda is the Sanskrit word for "speech sound"' }), "Shabda"]),
 
             m("p.intro", ["Shabda is a tool for assembling and sharing packs of found audio samples.",
@@ -401,3 +426,5 @@ var Shabda = {
     }
 }
 m.mount(root, Shabda)
+State.pollStatus()
+setInterval(State.pollStatus, 30000)

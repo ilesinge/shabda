@@ -5,6 +5,15 @@ body {
     padding: 20px 50px;
 }
 
+#freesound-banner {
+    background-color: #fff3cd;
+    border: 1px solid #e6a817;
+    border-radius: 5px;
+    color: #5c3d00;
+    padding: 10px 16px;
+    margin-bottom: 16px;
+}
+
 .help img,
 .help p {
     float: left;

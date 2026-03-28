@@ -18,6 +18,7 @@ from flask import (
 )
 from werkzeug.exceptions import BadRequest, HTTPException
 from shabda.dj import Dj
+from shabda.client import FreesoundUnavailableError
 
 
 SHABDA_PATH = os.path.expanduser("~/.shabda/")
@@ -54,6 +55,15 @@ async def pack(definition):
             number = 1
         tasks.append(fetch_one(word, number, licenses))
     results = await asyncio.gather(*tasks)
+
+    for result in results:
+        if isinstance(result, dict) and result.get("unavailable"):
+            return jsonify(
+                {
+                    "status": "freesound_unavailable",
+                    "error": result["error"],
+                }
+            ), 503
 
     global_status = "empty"
     for status in results:
@@ -257,6 +267,21 @@ def static(path):
     return send_from_directory("../assets/", path, as_attachment=False)
 
 
+@bp.route("/status")
+def status():
+    """Service availability status. Also triggers a lazy Freesound reconnect."""
+    dj.try_reconnect()
+    return jsonify(
+        {
+            "freesound": {
+                "available": dj.freesound_available,
+                "error": dj.freesound_error,
+            },
+            "speech": {"available": True},
+        }
+    )
+
+
 @bp.errorhandler(HTTPException)
 def handle_exception(exception):
     """Return JSON instead of HTML for HTTP errors."""
@@ -288,7 +313,10 @@ async def speak_one(word, language, gender):
 
 async def fetch_one(word, number, licenses):
     """Fetch a single sample set"""
-    return await dj.fetch(word, number, licenses)
+    try:
+        return await dj.fetch(word, number, licenses)
+    except FreesoundUnavailableError as exc:
+        return {"unavailable": True, "error": str(exc)}
 
 
 def clean_definition(words):

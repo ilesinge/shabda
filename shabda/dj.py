@@ -15,7 +15,7 @@ from termcolor import colored
 from google.cloud import texttospeech
 
 from shabda.display import print_error
-from shabda.client import Client
+from shabda.client import Client, FreesoundUnavailableError
 from shabda.sampleset import FREESOUND, SampleSet, TTS
 from shabda.sound import Sound
 import shabda.chatter as chatter
@@ -27,11 +27,33 @@ class Dj:
     client = None
     samples_path = ""
     speech_samples_path = ""
+    freesound_error = None
 
     def __init__(self, config_path="", samples_path="", speech_samples_path=""):
-        self.client = Client(config_path)
+        self.config_path = config_path
         self.samples_path = samples_path
         self.speech_samples_path = speech_samples_path
+        try:
+            self.client = Client(config_path)
+        except FreesoundUnavailableError as exc:
+            self.client = None
+            self.freesound_error = str(exc)
+            print_error("Freesound unavailable at startup: " + str(exc))
+
+    @property
+    def freesound_available(self):
+        """True when the Freesound client is connected."""
+        return self.client is not None
+
+    def try_reconnect(self):
+        """Attempt to (re)connect to Freesound. Safe to call at any time."""
+        if self.client is not None:
+            return
+        try:
+            self.client = Client(self.config_path)
+            self.freesound_error = None
+        except FreesoundUnavailableError as exc:
+            self.freesound_error = str(exc)
 
     def parse_definition(self, definition):
         """Parse a pack definition"""
@@ -131,6 +153,10 @@ class Dj:
 
     async def fetch(self, word, num, licenses):
         """Fetch a collection of samples"""
+        if self.client is None:
+            raise FreesoundUnavailableError(
+                self.freesound_error or "Freesound is unavailable."
+            )
         mastersound = None
         sampleset = SampleSet(word, samples_path=self.samples_path)
 
