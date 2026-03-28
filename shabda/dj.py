@@ -153,10 +153,6 @@ class Dj:
 
     async def fetch(self, word, num, licenses):
         """Fetch a collection of samples"""
-        if self.client is None:
-            raise FreesoundUnavailableError(
-                self.freesound_error or "Freesound is unavailable."
-            )
         mastersound = None
         sampleset = SampleSet(word, samples_path=self.samples_path)
 
@@ -164,6 +160,11 @@ class Dj:
         existing_number = len(existing_samples)
         if existing_number >= num:
             return True
+
+        if self.client is None:
+            raise FreesoundUnavailableError(
+                self.freesound_error or "Freesound is unavailable."
+            )
 
         master_id = sampleset.master_id
         if master_id:
