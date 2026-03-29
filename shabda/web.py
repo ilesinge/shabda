@@ -276,6 +276,7 @@ def status():
             "freesound": {
                 "available": dj.freesound_available,
                 "error": dj.freesound_error,
+                "reason": dj.freesound_error_reason,
             },
             "speech": {"available": True},
         }

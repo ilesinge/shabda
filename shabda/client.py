@@ -12,6 +12,10 @@ from termcolor import colored
 class FreesoundUnavailableError(Exception):
     """Raised when Freesound is unreachable or its API cannot be contacted."""
 
+    def __init__(self, message, reason="unreachable"):
+        super().__init__(message)
+        self.reason = reason
+
 
 class Client:
     """Freesound client"""
@@ -108,8 +112,10 @@ class Client:
                         json.dump(self.token_data, file)
                     self.client.set_token(self.token_data["access_token"], "oauth")
                 else:
-                    raise Exception(
-                        "An error occured while refreshing access token.", response
+                    raise FreesoundUnavailableError(
+                        f"Freesound authentication failed (HTTP {response.status_code})."
+                        " Re-authorization required.",
+                        reason="auth",
                     ) from exception
             else:
                 raise FreesoundUnavailableError(

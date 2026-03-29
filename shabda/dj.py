@@ -28,6 +28,7 @@ class Dj:
     samples_path = ""
     speech_samples_path = ""
     freesound_error = None
+    freesound_error_reason = None
 
     def __init__(self, config_path="", samples_path="", speech_samples_path=""):
         self.config_path = config_path
@@ -38,6 +39,7 @@ class Dj:
         except FreesoundUnavailableError as exc:
             self.client = None
             self.freesound_error = str(exc)
+            self.freesound_error_reason = exc.reason
             print_error("Freesound unavailable at startup: " + str(exc))
 
     @property
@@ -52,8 +54,10 @@ class Dj:
         try:
             self.client = Client(self.config_path)
             self.freesound_error = None
+            self.freesound_error_reason = None
         except FreesoundUnavailableError as exc:
             self.freesound_error = str(exc)
+            self.freesound_error_reason = exc.reason
 
     def parse_definition(self, definition):
         """Parse a pack definition"""
