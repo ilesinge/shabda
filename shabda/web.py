@@ -4,6 +4,8 @@ import asyncio
 import os
 from urllib.parse import urlparse
 import json
+import re
+import pronouncing
 from zipfile import ZipFile
 import tempfile
 
@@ -19,6 +21,7 @@ from flask import (
 from werkzeug.exceptions import BadRequest, HTTPException
 from shabda.dj import Dj
 from shabda.client import FreesoundUnavailableError
+import shabda.phonemize as phonemize
 
 
 SHABDA_PATH = os.path.expanduser("~/.shabda/")
@@ -29,6 +32,206 @@ SPEECH_SAMPLE_PATH = "speech_samples/"
 bp = Blueprint("web", __name__, url_prefix="/")
 
 dj = Dj(SHABDA_PATH, SAMPLES_PATH, SPEECH_SAMPLE_PATH)
+_phoneme_response_cache = {}
+
+
+def safe_bank_name(name: str, preserve_underscores: bool = False) -> str:
+    """Normalize a token into a bank-safe key.
+
+    Words use hyphens, while phone sequence keys can preserve underscores.
+    """
+    name = name.strip()
+    if preserve_underscores:
+        name = re.sub(r"\s+", "-", name)
+        name = re.sub(r"[^A-Za-z0-9_-]+", "-", name)
+        name = re.sub(r"_+", "_", name)
+        name = re.sub(r"-+", "-", name)
+        return name.strip("-_")
+
+    name = re.sub(r"[\s_]+", "-", name)
+    name = re.sub(r"[^A-Za-z0-9-]+", "-", name)
+    name = re.sub(r"-+", "-", name)
+    return name.strip("-")
+
+
+def parse_arpabet_overrides(raw: str | None) -> dict[str, list[str]]:
+    """Parse ARPABET overrides from query string.
+
+    Format:
+      overrides=word:PH1_PH2_PH3;other:PH1 PH2
+
+    Notes:
+      - entries are separated by ';'
+      - phones may be separated by '_' or whitespace
+      - words are matched case-insensitively
+    """
+    if not raw:
+        return {}
+
+    overrides = {}
+    entries = [entry.strip() for entry in raw.split(";") if entry.strip()]
+    for entry in entries:
+        if ":" not in entry:
+            continue
+        word, phones_raw = entry.split(":", 1)
+        word = "".join(ch for ch in word.lower().strip() if ch.isalnum())
+        if not word:
+            continue
+
+        phones = [
+            token.upper()
+            for token in re.split(r"[_\s]+", phones_raw.strip())
+            if token.strip()
+        ]
+        if not phones:
+            continue
+
+        overrides[word] = phones
+
+    return overrides
+
+
+def sentence_chunk_plan(sentence_word_phones):
+    """Build a chunk plan where word boundaries remain sample boundaries."""
+    plan = []
+    for word, phones in sentence_word_phones:
+        if not phones:
+            plan.append(("oov", word))
+            continue
+
+        # Keep each word isolated so short unstressed words like "a" remain
+        # their own sample, while stressed syllables still begin the chunk.
+        for chunk in phonemize.chunk_phones_pre_stress(phones):
+            chunk_key_raw = "phc_" + "_".join(chunk)
+            plan.append(("chunk", chunk, word, chunk_key_raw))
+
+    return plan
+
+
+def sentence_tokens_to_timed_lines(
+    tokens: list[str],
+    beats_per_bar: int = 4,
+    bars_per_line: int = 2,
+    lead_in_beats: int | None = None,
+    target_stress_beat: int = 3,
+) -> list[str]:
+    """Pad tokens into fixed-size lines and place stressed chunks on strong beats."""
+    beats_per_bar = max(1, beats_per_bar)
+    bars_per_line = max(1, bars_per_line)
+    target_stress_beat = max(1, min(target_stress_beat, beats_per_bar))
+    slots_per_line = beats_per_bar * bars_per_line
+
+    if not tokens:
+        return [" ".join(["~"] * slots_per_line)]
+
+    def is_stressed_token(token: str) -> bool:
+        return bool(re.search(r"[A-Z]+[12](?:_|$)", token))
+
+    # Strong beats per bar: downbeat and (for 4/4-like meters) mid-bar accent.
+    strong_offsets = [0]
+    if beats_per_bar >= 4 and beats_per_bar % 2 == 0:
+        strong_offsets.append(beats_per_bar // 2)
+
+    strong_slots = []
+    for bar in range(bars_per_line):
+        bar_start = bar * beats_per_bar
+        for offset in strong_offsets:
+            slot = bar_start + offset
+            if 0 <= slot < slots_per_line:
+                strong_slots.append(slot)
+
+    def next_strong_slot(position: int) -> int | None:
+        for slot in strong_slots:
+            if slot >= position:
+                return slot
+        return None
+
+    # Build groups: stressed token plus following unstressed tokens stays together.
+    groups = []
+    idx = 0
+    while idx < len(tokens):
+        token = tokens[idx]
+        if is_stressed_token(token):
+            group = [token]
+            idx += 1
+            while idx < len(tokens) and not is_stressed_token(tokens[idx]):
+                group.append(tokens[idx])
+                idx += 1
+            groups.append((True, group))
+        else:
+            group = [token]
+            idx += 1
+            while idx < len(tokens) and not is_stressed_token(tokens[idx]):
+                group.append(tokens[idx])
+                idx += 1
+            groups.append((False, group))
+
+    lines = []
+    line_tokens = []
+    group_i = 0
+
+    if lead_in_beats is not None:
+        forced_lead = max(0, lead_in_beats)
+        line_tokens.extend(["~"] * min(forced_lead, slots_per_line))
+
+    while group_i < len(groups):
+        is_stress_group, group = groups[group_i]
+        cursor = len(line_tokens)
+
+        if is_stress_group:
+            target_slot = next_strong_slot(cursor)
+            if target_slot is None:
+                line_tokens.extend(["~"] * (slots_per_line - len(line_tokens)))
+                lines.append(" ".join(line_tokens))
+                line_tokens = []
+                continue
+
+            needed_rests = max(0, target_slot - cursor)
+            if cursor + needed_rests + len(group) > slots_per_line:
+                line_tokens.extend(["~"] * (slots_per_line - len(line_tokens)))
+                lines.append(" ".join(line_tokens))
+                line_tokens = []
+                continue
+
+            line_tokens.extend(["~"] * needed_rests)
+            line_tokens.extend(group)
+            group_i += 1
+            continue
+
+        # Unstressed/OOV group: pack directly, split only if needed.
+        available = slots_per_line - cursor
+        if len(group) <= available:
+            line_tokens.extend(group)
+            group_i += 1
+        else:
+            if available > 0:
+                line_tokens.extend(group[:available])
+                groups[group_i] = (False, group[available:])
+            line_tokens.extend(["~"] * (slots_per_line - len(line_tokens)))
+            lines.append(" ".join(line_tokens))
+            line_tokens = []
+
+        if len(line_tokens) == slots_per_line:
+            lines.append(" ".join(line_tokens))
+            line_tokens = []
+
+    if line_tokens:
+        line_tokens.extend(["~"] * (slots_per_line - len(line_tokens)))
+        lines.append(" ".join(line_tokens))
+
+    return lines
+
+
+def normalize_phoneme_definition(definition: str) -> str:
+    """Normalize textarea input into the phoneme API definition format."""
+    definition = definition.strip().lower()
+    definition = re.sub(r"\r?\n+", ",", definition)
+    definition = re.sub(r"\s*,\s*", ",", definition)
+    definition = re.sub(r"[ \t]+", "_", definition)
+    definition = re.sub(r"[^a-z0-9_,]+", "", definition)
+    definition = re.sub(r"_+", "_", definition)
+    definition = re.sub(r",+", ",", definition)
+    return definition.strip("_,")
 
 
 @bp.route("/")
@@ -90,9 +293,8 @@ async def pack_json(definition):
     await pack(definition)
 
     url = urlparse(request.base_url)
-    # SORRY :( QUICK HACK TO SUPPORT MY REVERSE PROXY
-    # base = url.scheme + "://" + url.hostname
-    base = "https://" + url.hostname
+    scheme = url.scheme if url.hostname in ("localhost", "127.0.0.1") else "https"
+    base = scheme + "://" + url.hostname
     if url.port:
         base += ":" + str(url.port)
     base += "/"
@@ -180,6 +382,7 @@ async def speech(definition):
     """Download a spoken word"""
     gender = request.args.get("gender", "f")
     language = request.args.get("language", "en-GB")
+    force = request.args.get("force", False, type=bool)
 
     definition = definition.replace(" ", "_")
     try:
@@ -188,7 +391,7 @@ async def speech(definition):
         raise BadRequest(ex) from ex
     tasks = []
     for word in words:
-        tasks.append(speak_one(word, language, gender))
+        tasks.append(speak_one(word, language, gender, force=force))
     results = await asyncio.gather(*tasks)
     global_status = "empty"
     for status in results:
@@ -203,6 +406,270 @@ async def speech(definition):
     )
 
 
+async def _generate_phoneme_samples(definition, language, gender, force, overrides):
+    """Synthesise all samples needed for a definition string."""
+    sentence_definitions = [part for part in definition.split(",") if part]
+    sentence_word_phones = [
+        phonemize.sentence_to_arpabet(sentence_def, overrides=overrides)
+        for sentence_def in sentence_definitions
+    ]
+
+    tasks = []
+    seen_chunks = set()
+    for sentence in sentence_word_phones:
+        for unit in sentence_chunk_plan(sentence):
+            unit_type = unit[0]
+            if unit_type == "oov":
+                value = unit[1]
+                tasks.append(
+                    speak_one(safe_bank_name(value), language, gender, force=force)
+                )
+                continue
+
+            chunk = unit[1]
+            text_hint = unit[2]
+            chunk_key_raw = unit[3]
+            chunk_key = safe_bank_name(chunk_key_raw, preserve_underscores=True)
+            if chunk_key not in seen_chunks:
+                seen_chunks.add(chunk_key)
+                chunk_ipa = [phonemize.arpabet_to_ipa(phone) for phone in chunk]
+                tasks.append(
+                    speak_phoneme_chunk_one(
+                        chunk_key,
+                        chunk_ipa,
+                        language,
+                        gender,
+                        text_hint=text_hint,
+                        force=force,
+                    )
+                )
+
+    await asyncio.gather(*tasks)
+    return sentence_word_phones
+
+
+async def build_phoneme_sentence_data(definition, overrides):
+    """Build phoneme metadata without synthesising audio."""
+    sentence_definitions = [part for part in definition.split(",") if part]
+    sentence_word_phones = [
+        phonemize.sentence_to_arpabet(sentence_def, overrides=overrides)
+        for sentence_def in sentence_definitions
+    ]
+
+    return sentence_word_phones
+
+
+@bp.route("/phonemes/<definition>")
+async def phonemes(definition):
+    """Generate phoneme samples for a sentence"""
+    gender = request.args.get("gender", "f")
+    language = request.args.get("language", "en-GB")
+    force = request.args.get("force", False, type=bool)
+    overrides = parse_arpabet_overrides(request.args.get("overrides"))
+
+    definition = normalize_phoneme_definition(definition)
+    sentence_word_phones = await _generate_phoneme_samples(
+        definition, language, gender, force, overrides
+    )
+    word_phones = [item for sentence in sentence_word_phones for item in sentence]
+
+    global_status = "empty"
+    words_out = []
+    phonemes_out = []
+    for word, phones in word_phones:
+        if phones is None:
+            words_out.append(word)
+            phonemes_out.append([word])   # single-element list signals OOV
+        else:
+            words_out.append(word)
+            phonemes_out.append(phones)
+            global_status = "ok"
+        if phones:
+            global_status = "ok"
+
+    return jsonify(
+        {
+            "status": global_status,
+            "words": words_out,
+            "phonemes": phonemes_out,
+        }
+    )
+
+
+@bp.route("/phonemes/<definition>.json")
+async def phonemes_json(definition):
+    """Return ordered phoneme sequence for reconstructing the sentence"""
+    strudel = request.args.get("strudel", False, type=bool)
+    details = request.args.get("details", False, type=bool)
+    gender = request.args.get("gender", "f")
+    language = request.args.get("language", "en-GB")
+    beats_per_bar = request.args.get("beats_per_bar", 4, type=int)
+    bars_per_line = request.args.get("bars_per_line", 2, type=int)
+    lead_in_beats = request.args.get("lead_in_beats", type=int)
+    target_stress_beat = request.args.get("target_stress_beat", 3, type=int)
+    preview = request.args.get("preview", False, type=bool)
+    overrides_raw = request.args.get("overrides")
+    overrides = parse_arpabet_overrides(overrides_raw)
+    force = request.args.get("force", False, type=bool)
+    definition = normalize_phoneme_definition(definition)
+
+    response_cache_key = (
+        definition,
+        strudel,
+        details,
+        preview,
+        gender,
+        language,
+        beats_per_bar,
+        bars_per_line,
+        lead_in_beats,
+        target_stress_beat,
+        json.dumps(overrides, sort_keys=True),
+    )
+
+    if not force:
+        cached_response = _phoneme_response_cache.get(response_cache_key)
+        if cached_response is not None:
+            return jsonify(cached_response)
+
+    if preview:
+        sentence_word_phones = await build_phoneme_sentence_data(definition, overrides)
+    else:
+        # Ensure all samples exist (with correct overrides and force flag)
+        sentence_word_phones = await _generate_phoneme_samples(
+            definition, language, gender, force, overrides
+        )
+
+    url = urlparse(request.base_url)
+    scheme = url.scheme if url.hostname in ("localhost", "127.0.0.1") else "https"
+    base = scheme + "://" + url.hostname
+    if url.port:
+        base += ":" + str(url.port)
+    base += "/"
+    word_phones = [item for sentence in sentence_word_phones for item in sentence]
+
+    sentences_phonetic = []
+    for sentence in sentence_word_phones:
+        sentence_words = []
+        for word, phones in sentence:
+            if phones:
+                arpabet_string = " ".join(phones)
+                sentence_words.append(
+                    {
+                        "word": word,
+                        "arpabet": arpabet_string,
+                        "ipa": "".join(phonemize.arpabet_to_ipa(phone) for phone in phones),
+                        "stress_pattern": pronouncing.stresses(arpabet_string),
+                        "stressed_arpabet": [
+                            phone for phone in phones if phone[-1:].isdigit() and phone[-1] in ("1", "2")
+                        ],
+                    }
+                )
+            else:
+                sentence_words.append(
+                    {
+                        "word": word,
+                        "arpabet": None,
+                        "ipa": None,
+                        "stress_pattern": None,
+                        "stressed_arpabet": [],
+                    }
+                )
+        sentences_phonetic.append(sentence_words)
+
+    sentences_strudel = []
+    sentences_strudel_timed = []
+    sentence_chunks = []
+    for sentence in sentence_word_phones:
+        sentence_tokens = []
+        for unit in sentence_chunk_plan(sentence):
+            unit_type = unit[0]
+            if unit_type == "oov":
+                value = unit[1]
+                sentence_tokens.append(safe_bank_name(value))
+            else:
+                chunk_key_raw = unit[3]
+                chunk_key = safe_bank_name(chunk_key_raw, preserve_underscores=True)
+                sentence_tokens.append(chunk_key)
+                if not preview:
+                    sentence_chunks.append(chunk_key)
+        sentences_strudel.append(" ".join(sentence_tokens))
+        sentences_strudel_timed.append(
+            sentence_tokens_to_timed_lines(
+                sentence_tokens,
+                beats_per_bar=beats_per_bar,
+                bars_per_line=bars_per_line,
+                lead_in_beats=lead_in_beats,
+                target_stress_beat=target_stress_beat,
+            )
+        )
+
+    if strudel:
+        reslist = {"_base": base}
+    else:
+        reslist = []
+
+    if not preview:
+        for word, phones in word_phones:
+            if phones is None:
+                # OOV: use whole-word sample
+                bank = safe_bank_name(word)
+                samples = dj.list(bank, gender=gender, language=language, soundtype="tts")
+                for sound in samples:
+                    if strudel:
+                        if bank not in reslist:
+                            reslist[bank] = []
+                        reslist[bank].append(sound.file)
+                    else:
+                        reslist.append(
+                            {
+                                "url": sound.file,
+                                "type": "audio",
+                                "bank": bank,
+                                "n": 0,
+                                "oov": True,
+                            }
+                        )
+                    break  # only one WAV per word/lang/gender
+
+        seen_chunk_banks = set()
+        for bank in sentence_chunks:
+            if bank in seen_chunk_banks:
+                continue
+            seen_chunk_banks.add(bank)
+            samples = dj.list(bank, gender=gender, language=language, soundtype="tts")
+            for sound in samples:
+                if strudel:
+                    if bank not in reslist:
+                        reslist[bank] = []
+                    reslist[bank].append(sound.file)
+                else:
+                    reslist.append(
+                        {
+                            "url": sound.file,
+                            "type": "audio",
+                            "bank": bank,
+                            "n": 0,
+                            "oov": False,
+                        }
+                    )
+                break  # only one WAV per chunk/lang/gender
+
+    if strudel and details:
+        reslist["sentences_strudel"] = sentences_strudel
+        reslist["sentences_strudel_timed"] = sentences_strudel_timed
+        reslist["sentences_phonetic"] = sentences_phonetic
+        reslist["beats_per_bar"] = beats_per_bar
+        reslist["bars_per_line"] = bars_per_line
+        reslist["lead_in_beats"] = lead_in_beats
+        reslist["target_stress_beat"] = target_stress_beat
+
+    if not force:
+        _phoneme_response_cache[response_cache_key] = reslist
+
+    return jsonify(reslist)
+
+
 @bp.route("/speech/<definition>.json")
 async def speech_json(definition):
     """Download a reslist definition"""
@@ -214,8 +681,8 @@ async def speech_json(definition):
     await speech(definition)
 
     url = urlparse(request.base_url)
-    # base = url.scheme + "://" + url.hostname
-    base = "https://" + url.hostname
+    scheme = url.scheme if url.hostname in ("localhost", "127.0.0.1") else "https"
+    base = scheme + "://" + url.hostname
     if url.port:
         base += ":" + str(url.port)
     base += "/"
@@ -307,9 +774,28 @@ def cors_after(response):
     return response
 
 
-async def speak_one(word, language, gender):
+async def speak_one(word, language, gender, force=False):
     """Speak a word"""
-    return await dj.speak(word, language, gender)
+    return await dj.speak(word, language, gender, force=force)
+
+
+async def speak_phoneme_one(arpabet_phone, ipa, language, gender, force=False):
+    """Synthesise a single phoneme"""
+    return await dj.speak_phoneme(arpabet_phone, ipa, language, gender, force=force)
+
+
+async def speak_phoneme_chunk_one(
+    chunk_key,
+    ipa_phones,
+    language,
+    gender,
+    text_hint="",
+    force=False,
+):
+    """Synthesise a chunk of phonemes"""
+    return await dj.speak_phoneme_chunk(
+        chunk_key, ipa_phones, language, gender, text_hint=text_hint, force=force
+    )
 
 
 async def fetch_one(word, number, licenses):
