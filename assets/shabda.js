@@ -62,17 +62,17 @@ function renderLanguageSelect(id, value, onChange) {
         }))
 }
 
-function renderCopyControls() {
+function renderCopyControls(type) {
     return [
         m("small", "Insert in Estuary terminal: "),
-        m("pre", State.lastreslist()),
-        m("img", { onclick: function () { State.copyreslist() }, src: "assets/clipboard.png", height: "16" }),
+        m("pre", State.lastreslist(false, type)),
+        m("img", { onclick: function () { State.copyreslist(false, type) }, src: "assets/clipboard.png", height: "16" }),
         State.copied ? m("span.copied", "copied") : null,
         m("br"),
         m("br"),
         m("small", "Insert in Strudel: "),
-        m("pre", State.lastreslist(true)),
-        m("img", { onclick: function () { State.copyreslist(true) }, src: "assets/clipboard.png", height: "16" }),
+        m("pre", State.lastreslist(true, type)),
+        m("img", { onclick: function () { State.copyreslist(true, type) }, src: "assets/clipboard.png", height: "16" }),
         State.strudelcopied ? m("span.copied", "copied") : null,
     ]
 }
@@ -130,11 +130,11 @@ function normalizePhonemeDefinition(definition) {
 
 var State = {
     pack: "",
-    progress: false,
-    lastretrievedtype: "",
-    lastretrieved: "",
-    lastreslistcontents: [],
-    error: "",
+    results: {
+        pack: { progress: false, retrieved: "", contents: [], error: "" },
+        speech: { progress: false, retrieved: "", contents: [], error: "" },
+        phonemes: { progress: false, retrieved: "", contents: {}, error: "" },
+    },
     licenses: ["by", "cc0", "by-nc"],
     speech: "",
     speechLanguage: "uk-UA",
@@ -151,6 +151,20 @@ var State = {
     freesoundAvailable: true,
     freesoundError: null,
     freesoundErrorReason: null,
+
+    getResult: function (type) {
+        return State.results[type]
+    },
+
+    currentType: function () {
+        if (State.tab == "speech") {
+            return "speech"
+        }
+        if (State.tab == "phonemes") {
+            return "phonemes"
+        }
+        return "pack"
+    },
 
     pollStatus: function () {
         m.request({ method: "GET", url: "/status" })
@@ -188,31 +202,49 @@ var State = {
         }
     },
 
-    lastretrievedreslist: function () {
-        return this.lastretrieved + ".json"
+    lastretrievedreslist: function (type) {
+        var result = State.getResult(type)
+        return result.retrieved + ".json"
     },
 
-    lastretrievedzip: function () {
-        return window.location + this.lastretrieved + ".zip"
+    lastretrievedzip: function (type) {
+        var result = State.getResult(type)
+        return window.location + result.retrieved + ".zip"
     },
 
-    lastreslist: function (strudel = false) {
-        var url = new URL(location.href + State.lastretrievedreslist())
-        if (this.lastretrievedtype == "pack" && State.licenses.length < 3) {
+    phonemezipurl: function () {
+        var result = State.getResult("phonemes")
+        if (!result.retrieved) {
+            return ""
+        }
+        var url = new URL(State.lastretrievedzip("phonemes"))
+        url.searchParams.append("gender", State.phonemeGender)
+        url.searchParams.append("language", State.phonemeLanguage)
+        if (State.phonemeOverrides.trim()) {
+            url.searchParams.append("overrides", State.phonemeOverrides.trim())
+        }
+        return url.href
+    },
+
+    lastreslist: function (strudel = false, type = State.currentType()) {
+        var result = State.getResult(type)
+        if (!result.retrieved) {
+            return ""
+        }
+        var url = new URL(location.href + State.lastretrievedreslist(type))
+        if (type == "pack" && State.licenses.length < 3) {
             url.searchParams.append("licenses", State.licenses.join())
         }
-        if (this.lastretrievedtype == "speech") {
+        if (type == "speech") {
             url.searchParams.append("gender", State.speechGender)
             url.searchParams.append("language", State.speechLanguage)
         }
-        if (this.lastretrievedtype == "phonemes") {
+        if (type == "phonemes") {
             url.searchParams.append("gender", State.phonemeGender)
             url.searchParams.append("language", State.phonemeLanguage)
             if (State.phonemeOverrides.trim()) {
                 url.searchParams.append("overrides", State.phonemeOverrides.trim())
             }
-        }
-        if (this.lastretrievedtype == "phonemes") {
             url.searchParams.append("beats_per_bar", State.beatsPerBar)
             url.searchParams.append("bars_per_line", State.barsPerLine)
             url.searchParams.append("target_stress_beat", State.targetStressBeat)
@@ -225,52 +257,58 @@ var State = {
     },
 
     retrieve: function () {
+        var result = State.getResult("pack")
         if (!State.pack) {
-            State.error = "Please enter a pack definition"
+            result.error = "Please enter a pack definition"
             return
         }
 
-        State.error = ""
-        State.progress = true
+        result.error = ""
+        result.progress = true
         m.request({
             method: "GET",
             url: "/pack/" + encodeURIComponent(State.pack) + "?licenses=" + State.licenses.join(),
         })
             .then(function (result) {
-                State.progress = false
+                var packResult = State.getResult("pack")
+                packResult.progress = false
                 if (result.status == "ok") {
-                    State.lastretrieved = result.definition
-                    State.lastretrievedtype = "pack"
+                    packResult.retrieved = result.definition
                     m.request({
                         method: "GET",
-                        url: encodeURIComponent(State.lastretrievedreslist()) + "?complete=1&licenses=" + State.licenses.join(),
+                        url: encodeURIComponent(State.lastretrievedreslist("pack")) + "?complete=1&licenses=" + State.licenses.join(),
                     }).then(function (result) {
-                        State.lastreslistcontents = result
+                        packResult.contents = result
                     })
                 }
                 else if (result.status == "empty") {
-                    State.error = "Pack is empty"
+                    packResult.error = "Pack is empty"
                 }
                 else {
-                    State.error = "An error occured"
+                    packResult.error = "An error occured"
                 }
             })
             .catch(function (error) {
-                State.progress = false
+                var packResult = State.getResult("pack")
+                packResult.progress = false
                 if (error.code === 503 && error.response && error.response.status === "freesound_unavailable") {
-                    State.error = "Freesound is currently unavailable. Try again later."
+                    packResult.error = "Freesound is currently unavailable. Try again later."
                     State.freesoundAvailable = false
                     State.freesoundError = error.response.error
                 }
                 else {
-                    State.error = "An error occured"
+                    packResult.error = "An error occured"
                 }
             })
     },
 
-    copyreslist: function (strudel = false) {
+    copyreslist: function (strudel = false, type = State.currentType()) {
+        var value = State.lastreslist(strudel, type)
+        if (!value) {
+            return
+        }
         if (navigator && navigator.clipboard && navigator.clipboard.writeText) {
-            if (navigator.clipboard.writeText(State.lastreslist(strudel))) {
+            if (navigator.clipboard.writeText(value)) {
                 if (strudel) {
                     State.strudelcopied = true
                 }
@@ -294,50 +332,53 @@ var State = {
     },
 
     retrievespeech: function () {
+        var result = State.getResult("speech")
         if (!State.speech) {
-            State.error = "Please enter a pack definition"
+            result.error = "Please enter a pack definition"
             return
         }
 
-        State.error = ""
-        State.progress = true
+        result.error = ""
+        result.progress = true
         m.request({
             method: "GET",
             url: "/speech/" + encodeURIComponent(State.speech) + "?language=" + State.speechLanguage + "&gender=" + State.speechGender,
         })
             .then(function (result) {
-                State.progress = false
+                var speechResult = State.getResult("speech")
+                speechResult.progress = false
                 if (result.status == "ok") {
-                    State.lastretrieved = "speech/" + result.definition
-                    State.lastretrievedtype = "speech"
+                    speechResult.retrieved = "speech/" + result.definition
                     m.request({
                         method: "GET",
-                        url: encodeURIComponent(State.lastretrievedreslist()) + "?language=" + State.speechLanguage + "&gender=" + State.speechGender,
+                        url: encodeURIComponent(State.lastretrievedreslist("speech")) + "?language=" + State.speechLanguage + "&gender=" + State.speechGender,
                     }).then(function (result) {
-                        State.lastreslistcontents = result
+                        speechResult.contents = result
                     })
                 }
                 else if (result.status == "empty") {
-                    State.error = "Pack is empty"
+                    speechResult.error = "Pack is empty"
                 }
                 else {
-                    State.error = "An error occured"
+                    speechResult.error = "An error occured"
                 }
             })
             .catch(function () {
-                State.progress = false
-                State.error = "An error occured"
+                var speechResult = State.getResult("speech")
+                speechResult.progress = false
+                speechResult.error = "An error occured"
             })
     },
 
     retrievephonemes: function (preview = true) {
+        var result = State.getResult("phonemes")
         if (!State.phonemes) {
-            State.error = "Please enter a phoneme definition"
+            result.error = "Please enter a phoneme definition"
             return
         }
 
-        State.error = ""
-        State.progress = true
+        result.error = ""
+        result.progress = true
         State.phonemePreview = preview
         var phonemeDefinition = normalizePhonemeDefinition(State.phonemes)
         var phonemeOverrides = State.phonemeOverrides.trim()
@@ -356,26 +397,30 @@ var State = {
             url: "/phonemes/" + encodeURIComponent(phonemeDefinition) + ".json" + query,
         })
             .then(function (result) {
-                State.progress = false
+                var phonemeResult = State.getResult("phonemes")
+                phonemeResult.progress = false
                 if (result._base) {
-                    State.lastretrieved = "phonemes/" + phonemeDefinition
-                    State.lastretrievedtype = "phonemes"
-                    State.lastreslistcontents = result
+                    phonemeResult.retrieved = "phonemes/" + phonemeDefinition
+                    phonemeResult.contents = result
                 }
                 else {
-                    State.error = "An error occured"
+                    phonemeResult.error = "An error occured"
                 }
             })
             .catch(function () {
-                State.progress = false
-                State.error = "An error occured"
+                var phonemeResult = State.getResult("phonemes")
+                phonemeResult.progress = false
+                phonemeResult.error = "An error occured"
             })
     },
 }
 
 var Shabda = {
     view: function () {
-        var phonemeBanks = Object.keys(State.lastreslistcontents || {}).filter(function (key) {
+        var activeType = State.currentType()
+        var activeResult = State.getResult(activeType)
+        var activeContents = activeResult.contents || []
+        var phonemeBanks = Object.keys(activeType == "phonemes" ? activeContents : {}).filter(function (key) {
             if (key.charAt(0) == "_") {
                 return false
             }
@@ -388,7 +433,7 @@ var Shabda = {
             ) {
                 return false
             }
-            return Array.isArray(State.lastreslistcontents[key])
+            return Array.isArray(activeContents[key])
         })
 
         return m("main", [
@@ -568,7 +613,7 @@ var Shabda = {
                         }),
                     ]),
                     m("button", { onclick: function () { State.retrievephonemes(true) } }, "Preview phonemes"),
-                    m("button", { onclick: function () { State.retrievephonemes(false) } }, "Generate audio banks"),
+                    m("button", { onclick: function () { State.retrievephonemes(false) } }, "Fetch phonemes"),
                     m("br"),
                     m("br"),
                     m("div.help", [
@@ -590,35 +635,38 @@ var Shabda = {
                 ]),
 
                 m("div.pack-container", [
-                    m("h2", State.lastretrievedtype == "phonemes" ? "Phonemes" : "Samples"),
+                    m("h2", activeType == "phonemes" ? "Phonemes" : "Samples"),
                     m("div.pack",
-                        State.error ? m("span.error", State.error) :
-                            State.progress ?
+                        activeResult.error ? m("span.error", activeResult.error) :
+                            activeResult.progress ?
                                 m("img", { src: "assets/infinity.svg" }) :
-                                State.lastretrieved ?
-                                    State.lastretrievedtype == "phonemes" ?
+                                activeResult.retrieved ?
+                                    activeType == "phonemes" ?
                                         m("div.latest.phoneme-results", [
-                                            renderCopyControls(),
-                                            m("div.phoneme-sentences", (State.lastreslistcontents.sentences_phonetic || []).map(renderPhonemeSentence)),
+                                            renderCopyControls("phonemes"),
+                                            m("div.phoneme-sentences", (activeContents.sentences_phonetic || []).map(renderPhonemeSentence)),
                                             m("div.phoneme-strudel", [
                                                 m("h3", "Timed Strudel lines"),
-                                                m("pre", m("code", toQuotedStringList(flattenStringLists(State.lastreslistcontents.sentences_strudel_timed)))),
+                                                m("pre", m("code", toQuotedStringList(flattenStringLists(activeContents.sentences_strudel_timed)))),
                                                 m("h3", "Strudel chunks"),
-                                                m("pre", m("code", toQuotedStringList(State.lastreslistcontents.sentences_strudel || []))),
+                                                m("pre", m("code", toQuotedStringList(activeContents.sentences_strudel || []))),
                                             ]),
                                             m("div.phoneme-audio", [
                                                 m("h3", "Generated audio"),
                                                 phonemeBanks.length ? phonemeBanks.map(function (bank) {
-                                                    return renderPhonemeBank(bank, State.lastreslistcontents[bank] || [])
+                                                    return renderPhonemeBank(bank, activeContents[bank] || [])
                                                 }) : [
                                                     m("p", "Preview mode does not synthesize audio banks yet."),
-                                                    m("button", { onclick: function () { State.retrievephonemes(false) } }, "Generate audio banks"),
+                                                    m("button", { onclick: function () { State.retrievephonemes(false) } }, "Fetch phonemes"),
                                                 ],
                                             ]),
+                                            !State.phonemePreview && phonemeBanks.length
+                                                ? m("a.button", { href: State.phonemezipurl() }, "Download all")
+                                                : null,
                                         ]) :
                                         m("div.latest", [
-                                            renderCopyControls(),
-                                            m("ul.samples", State.lastreslistcontents.map(function (sound) {
+                                            renderCopyControls(activeType),
+                                            m("ul.samples", activeContents.map(function (sound) {
                                                 return m("li", [
                                                     m("audio", { controls: true, src: sound.url }),
                                                     " ",
@@ -628,9 +676,9 @@ var Shabda = {
                                                     )
                                                 ])
                                             })),
-                                            m("a.button", { href: State.lastretrievedzip() }, "Download all"),
+                                            m("a.button", { href: State.lastretrievedzip(activeType) }, "Download all"),
                                         ]) :
-                                    m("i", State.tab == "phonemes" ? "Fetch a definition to inspect its phonemes" : "Fetch a definition to hear its rendition")
+                                    m("i", activeType == "phonemes" ? "Fetch a definition to inspect its phonemes" : "Fetch a definition to hear its rendition")
                     )
                 ]),
             ]),

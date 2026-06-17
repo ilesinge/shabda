@@ -124,7 +124,7 @@ Generate phoneme-level samples with musical timing alignment. Each phoneme chunk
 
 **Actions:**
 - **Preview phonemes**: Returns text analysis and Strudel timing without synthesizing audio (fast).
-- **Generate audio banks**: Synthesizes all phoneme samples as WAV files (slower first time, then cached).
+- **Fetch phonemes**: Synthesizes all phoneme samples as WAV files (slower first time, then cached).
 
 **Output includes:**
 - IPA transcription of each word

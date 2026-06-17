@@ -234,6 +234,19 @@ def normalize_phoneme_definition(definition: str) -> str:
     return definition.strip("_,")
 
 
+def parse_bool_arg(name: str, default: bool = False) -> bool:
+    """Parse query bools robustly (supports 1/0, true/false, yes/no, on/off)."""
+    raw = request.args.get(name)
+    if raw is None:
+        return default
+    value = str(raw).strip().lower()
+    if value in {"1", "true", "t", "yes", "y", "on"}:
+        return True
+    if value in {"0", "false", "f", "no", "n", "off", ""}:
+        return False
+    return default
+
+
 @bp.route("/")
 def home():
     """Main page"""
@@ -284,9 +297,9 @@ async def pack(definition):
 @bp.route("/<definition>.json")
 async def pack_json(definition):
     """Download a reslist definition"""
-    complete = request.args.get("complete", False, type=bool)
+    complete = parse_bool_arg("complete", False)
     licenses = request.args.get("licenses", None)
-    strudel = request.args.get("strudel", False, type=bool)
+    strudel = parse_bool_arg("strudel", False)
     if licenses is not None:
         licenses = licenses.split(",")
 
@@ -382,7 +395,7 @@ async def speech(definition):
     """Download a spoken word"""
     gender = request.args.get("gender", "f")
     language = request.args.get("language", "en-GB")
-    force = request.args.get("force", False, type=bool)
+    force = parse_bool_arg("force", False)
 
     definition = definition.replace(" ", "_")
     try:
@@ -459,12 +472,45 @@ async def build_phoneme_sentence_data(definition, overrides):
     return sentence_word_phones
 
 
+def collect_phoneme_banks(sentence_word_phones):
+    """Collect unique TTS bank keys needed for a phoneme definition."""
+    banks = []
+    seen = set()
+
+    for sentence in sentence_word_phones:
+        for word, phones in sentence:
+            if phones is None:
+                bank = safe_bank_name(word)
+                if bank and bank not in seen:
+                    seen.add(bank)
+                    banks.append(bank)
+
+        for unit in sentence_chunk_plan(sentence):
+            if unit[0] != "chunk":
+                continue
+            chunk_key_raw = unit[3]
+            bank = safe_bank_name(chunk_key_raw, preserve_underscores=True)
+            if bank and bank not in seen:
+                seen.add(bank)
+                banks.append(bank)
+
+    return banks
+
+
+def speech_sample_zip_path(sample_file):
+    """Return a stable relative zip path for speech sample files."""
+    marker = SPEECH_SAMPLE_PATH
+    if marker in sample_file:
+        return sample_file.split(marker, 1)[1]
+    return os.path.basename(sample_file)
+
+
 @bp.route("/phonemes/<definition>")
 async def phonemes(definition):
     """Generate phoneme samples for a sentence"""
     gender = request.args.get("gender", "f")
     language = request.args.get("language", "en-GB")
-    force = request.args.get("force", False, type=bool)
+    force = parse_bool_arg("force", False)
     overrides = parse_arpabet_overrides(request.args.get("overrides"))
 
     definition = normalize_phoneme_definition(definition)
@@ -496,21 +542,61 @@ async def phonemes(definition):
     )
 
 
+@bp.route("/phonemes/<definition>.zip")
+async def phonemes_zip(definition):
+    """Download a zip archive for generated phoneme/OOV speech samples."""
+    gender = request.args.get("gender", "f")
+    language = request.args.get("language", "en-GB")
+    force = parse_bool_arg("force", False)
+    overrides = parse_arpabet_overrides(request.args.get("overrides"))
+
+    definition = normalize_phoneme_definition(definition)
+    sentence_word_phones = await _generate_phoneme_samples(
+        definition, language, gender, force, overrides
+    )
+
+    banks = collect_phoneme_banks(sentence_word_phones)
+
+    with tempfile.NamedTemporaryFile(suffix=".zip", delete=False) as tmp_handle:
+        tmpfile = tmp_handle.name
+
+    with ZipFile(tmpfile, "w") as zipfile:
+        added = set()
+        for bank in banks:
+            samples = dj.list(bank, gender=gender, language=language, soundtype="tts")
+            for sample in samples:
+                if not sample.file or not os.path.exists(sample.file):
+                    continue
+                arcname = speech_sample_zip_path(sample.file)
+                if arcname in added:
+                    break
+                zipfile.write(sample.file, arcname)
+                added.add(arcname)
+                break
+
+    @after_this_request
+    def remove_file(response):
+        os.remove(tmpfile)
+        return response
+
+    return send_file(tmpfile, as_attachment=True)
+
+
 @bp.route("/phonemes/<definition>.json")
 async def phonemes_json(definition):
     """Return ordered phoneme sequence for reconstructing the sentence"""
-    strudel = request.args.get("strudel", False, type=bool)
-    details = request.args.get("details", False, type=bool)
+    strudel = parse_bool_arg("strudel", False)
+    details = parse_bool_arg("details", False)
     gender = request.args.get("gender", "f")
     language = request.args.get("language", "en-GB")
     beats_per_bar = request.args.get("beats_per_bar", 4, type=int)
     bars_per_line = request.args.get("bars_per_line", 2, type=int)
     lead_in_beats = request.args.get("lead_in_beats", type=int)
     target_stress_beat = request.args.get("target_stress_beat", 3, type=int)
-    preview = request.args.get("preview", False, type=bool)
+    preview = parse_bool_arg("preview", False)
     overrides_raw = request.args.get("overrides")
     overrides = parse_arpabet_overrides(overrides_raw)
-    force = request.args.get("force", False, type=bool)
+    force = parse_bool_arg("force", False)
     definition = normalize_phoneme_definition(definition)
 
     response_cache_key = (
@@ -673,7 +759,7 @@ async def phonemes_json(definition):
 @bp.route("/speech/<definition>.json")
 async def speech_json(definition):
     """Download a reslist definition"""
-    strudel = request.args.get("strudel", False, type=bool)
+    strudel = parse_bool_arg("strudel", False)
     gender = request.args.get("gender", "f")
     language = request.args.get("language", "en-GB")
     definition = definition.replace(" ", "_")
