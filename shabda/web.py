@@ -19,6 +19,7 @@ from flask import (
     after_this_request,
 )
 from werkzeug.exceptions import BadRequest, HTTPException
+from werkzeug.utils import secure_filename
 from shabda.dj import Dj
 from shabda.client import FreesoundUnavailableError
 import shabda.phonemize as phonemize
@@ -371,11 +372,12 @@ def pack_zip(definition):
 def speech_zip(definition):
     """Download a zip archive"""
     definition = definition.replace(" ", "_")
+    definition_secure = secure_filename(definition)
     try:
         words = dj.parse_definition(definition)
     except ValueError as ex:
         raise BadRequest(ex) from ex
-    tmpfile = tempfile.gettempdir() + "/" + definition + ".zip"
+    tmpfile = os.path.join(tempfile.gettempdir(), definition_secure + ".zip")
     with ZipFile(tmpfile, "w") as zipfile:
         for word, number in words.items():
             samples = dj.list(word, number, soundtype="tts")
