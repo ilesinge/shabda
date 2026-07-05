@@ -55,11 +55,94 @@ Launch the web application:
 In debug mode:
 ```
 FLASK_APP=shabda FLASK_DEBUG=1 flask run
+
+or 
+
+FLASK_APP=shabda FLASK_DEBUG=1 poetry run flask run
+
 ```
 In production:
 ```
 gunicorn --workers=4 "shabda:create_app()" -b localhost:8000
 ```
+
+Then navigate to `http://localhost:5000/` (or your production URL).
+
+### Pack Tab
+
+Fetch random audio samples from Freesound based on words.
+
+- **Pack definition**: Enter one or more words separated by commas (e.g., `blue,red:3`).
+- **Licenses**: Select which Creative Commons licenses to allow (cc0, by, by-nc).
+- **Fetch pack**: Generates a reslist with sample URLs.
+
+Use in Estuary:
+```
+!reslist "http://your-shabda-url/blue,red.json"
+```
+
+Use in Strudel:
+```
+samples('shabda:blue:2,red:3')
+```
+
+### Speech Tab
+
+Generate Text-to-Speech samples from text input.
+
+- **Speech definition**: Enter words or sentences (spaces become underscores; `hello_world` produces a "hello world" sample).
+- **Gender**: Choose Female or Male voice.
+- **Language**: Select from 50+ languages (e.g., en-GB, en-US, fr-FR, ja-JP).
+- **Fetch speech**: Generates audio samples using the selected voice.
+
+Use in Estuary:
+```
+!reslist "http://your-shabda-url/speech/hello_world.json?language=en-GB&gender=f"
+```
+
+Use in Strudel:
+```
+samples('shabda/speech/en-GB/f:hello_world')
+```
+
+### Phonemes Tab
+
+Generate phoneme-level samples with musical timing alignment. Each phoneme chunk becomes a sample, with stress-aware line wrapping for Strudel integration.
+
+**Inputs:**
+- **Phoneme definition**: Enter lyrics (one or more sentences, any case). Commas and underscores separate phrases. Example:
+  ```
+  Papa was a rolling stone
+  Wherever he laid his hat
+  ```
+- **ARPABET overrides**: Specify custom pronunciations for words in `word:PH1_PH2 format` (e.g., `papa:P_AA1_P_A;hat:HH_AE1_T`). Separate multiple overrides with semicolons.
+- **Beats / bar**: Musical meter (default 4 for 4/4 time).
+- **Bars / line**: Lines per phrase (default 2).
+- **Target stress beat**: Which beat in the bar should primary stressed syllables land on (default 3 for a pickup feel; use 1 for downbeat emphasis).
+- **Gender**: Choose Female or Male voice (default: Male).
+- **Language**: Select pronunciation language (default: en-GB).
+
+**Actions:**
+- **Preview phonemes**: Returns text analysis and Strudel timing without synthesizing audio (fast).
+- **Fetch phonemes**: Synthesizes all phoneme samples as WAV files (slower first time, then cached).
+
+**Output includes:**
+- IPA transcription of each word
+- ARPABET phoneme breakdown
+- Stress pattern analysis
+- Timed Strudel phrases with beat alignment
+- Direct audio sample URLs
+
+Use in Strudel:
+```
+samples('shabda/phonemes/en-GB/m:papa_was_a_rolling_stone', { overrides: 'papa:P_AA1_P_A' })
+s("phc_P_AA1_P_A phc_W_AA1_Z phc_AH0 ~ phc_R_OW1_L_IH0_NG ...")
+```
+
+**How stress alignment works:**
+- If a line's first phoneme chunk is stressed (marked with 1 or 2), it lands on beat 1 (no rest needed).
+- If a line starts unstressed, rests are added so the first stressed chunk lands on the target beat (default beat 3).
+- This ensures consistent musical phrasing across all lines.
 
 Test
 ----

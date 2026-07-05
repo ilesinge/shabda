@@ -26,6 +26,7 @@ flask = {extras = ["async"], version = "*"}
 gunicorn = "*"
 typer = {extras = ["all"], version = "*"}
 google-cloud-texttospeech = "*"
+pronouncing = "*"
 
 [tool.poetry.group.dev.dependencies]
 pylint = "*"
