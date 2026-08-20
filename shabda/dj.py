@@ -9,6 +9,8 @@ import os
 import re
 import asyncio
 import urllib
+import logging
+import html
 
 import freesound
 import pydub
@@ -20,6 +22,9 @@ from shabda.client import Client, FreesoundUnavailableError
 from shabda.sampleset import FREESOUND, SampleSet, TTS
 from shabda.sound import Sound
 import shabda.chatter as chatter
+
+
+logger = logging.getLogger(__name__)
 
 
 class Dj:
@@ -106,13 +111,13 @@ class Dj:
             max_number, licenses=licenses, gender=gender, language=language
         )
 
-    async def speak(self, word, language, gender):
+    async def speak(self, word, language, gender, force=False):
         """Speak a word"""
         # Only allow safe characters: letters, digits, underscore, dash
         language_sanitized = re.sub(r'[^\w\-]', '', language)
         sampleset = SampleSet(word, TTS, self.speech_samples_path)
         existing_samples = sampleset.list(language=language_sanitized, gender=gender)
-        if len(existing_samples) > 0:
+        if len(existing_samples) > 0  and not force:
             return True
         word_dir = sampleset.dir()
         client = texttospeech.TextToSpeechClient()
@@ -151,6 +156,143 @@ class Dj:
             speechsound={
                 "gender": gender,
                 "language": language_sanitized,
+                "file": filepath,
+            }
+        )
+        sampleset.add(sound)
+        sampleset.saveconfig()
+        return True
+
+    async def speak_phoneme(self, arpabet_phone, ipa, language, gender, force=False):
+        """Synthesise a single phoneme via SSML and store as a TTS sample"""
+        key = "ph_" + arpabet_phone
+        sampleset = SampleSet(key, TTS, self.speech_samples_path)
+        existing_samples = sampleset.list(language=language, gender=gender)
+        if not force and any(
+            os.path.exists(sample.file) and os.path.getsize(sample.file) > 128
+            for sample in existing_samples
+        ):
+            return True
+        word_dir = sampleset.dir()
+        client = texttospeech.TextToSpeechClient()
+        ssml = f'<speak><phoneme alphabet="ipa" ph="{ipa}">x</phoneme></speak>'
+        logger.warning(
+            "[tts:ssml:phoneme] key=%s language=%s gender=%s ssml=%s",
+            key,
+            language,
+            gender,
+            ssml,
+        )
+        synthesis_input = texttospeech.SynthesisInput(ssml=ssml)
+
+        if gender == "f":
+            ssml_gender = texttospeech.SsmlVoiceGender.FEMALE
+        else:
+            ssml_gender = texttospeech.SsmlVoiceGender.MALE
+
+        voice_name = chatter.pick_voice(language, ssml_gender, client)
+
+        if language == "en-GB" and gender == "f":
+            voice = texttospeech.VoiceSelectionParams(
+                name="en-GB-Neural2-A",
+                language_code="en-GB",
+                ssml_gender=texttospeech.SsmlVoiceGender.FEMALE,
+            )
+        else:
+            voice = texttospeech.VoiceSelectionParams(
+                name=voice_name, language_code=language
+            )
+        audio_config = texttospeech.AudioConfig(
+            audio_encoding=texttospeech.AudioEncoding.LINEAR16,
+        )
+        response = client.synthesize_speech(
+            input=synthesis_input, voice=voice, audio_config=audio_config
+        )
+        filepath = word_dir + "/" + key + "_" + language + "_" + gender + ".wav"
+        with open(filepath, "wb") as out:
+            out.write(response.audio_content)
+        if len(existing_samples) > 0:
+            return True
+        sound = Sound(
+            speechsound={
+                "gender": gender,
+                "language": language,
+                "file": filepath,
+            }
+        )
+        sampleset.add(sound)
+        sampleset.saveconfig()
+        return True
+
+    async def speak_phoneme_chunk(
+        self,
+        chunk_key,
+        ipa_phones,
+        language,
+        gender,
+        text_hint="",
+        force=False,
+    ):
+        """Synthesise a sequence of phonemes via SSML and store as a TTS sample"""
+        sampleset = SampleSet(chunk_key, TTS, self.speech_samples_path)
+        existing_samples = sampleset.list(language=language, gender=gender)
+        if not force and any(
+            os.path.exists(sample.file) and os.path.getsize(sample.file) > 128
+            for sample in existing_samples
+        ):
+            return True
+
+        word_dir = sampleset.dir()
+        client = texttospeech.TextToSpeechClient()
+        ipa_string = "".join(ipa_phones)
+        phoneme_body = html.escape(text_hint.strip() or "x")
+        ssml = (
+            f'<speak><phoneme alphabet="ipa" ph="{ipa_string}">{phoneme_body}</phoneme></speak>'
+        )
+        logger.warning(
+            "[tts:ssml:chunk] key=%s language=%s gender=%s ssml=%s",
+            chunk_key,
+            language,
+            gender,
+            ssml,
+        )
+        synthesis_input = texttospeech.SynthesisInput(ssml=ssml)
+
+        if gender == "f":
+            ssml_gender = texttospeech.SsmlVoiceGender.FEMALE
+        else:
+            ssml_gender = texttospeech.SsmlVoiceGender.MALE
+
+        voice_name = chatter.pick_voice(language, ssml_gender, client)
+
+        if language == "en-GB" and gender == "f":
+            voice = texttospeech.VoiceSelectionParams(
+                name="en-GB-Neural2-A",
+                language_code="en-GB",
+                ssml_gender=texttospeech.SsmlVoiceGender.FEMALE,
+            )
+        else:
+            voice = texttospeech.VoiceSelectionParams(
+                name=voice_name, language_code=language
+            )
+
+        audio_config = texttospeech.AudioConfig(
+            audio_encoding=texttospeech.AudioEncoding.LINEAR16,
+        )
+        response = client.synthesize_speech(
+            input=synthesis_input, voice=voice, audio_config=audio_config
+        )
+
+        filepath = word_dir + "/" + chunk_key + "_" + language + "_" + gender + ".wav"
+        with open(filepath, "wb") as out:
+            out.write(response.audio_content)
+        if len(existing_samples) > 0:
+            return True
+
+        sound = Sound(
+            speechsound={
+                "gender": gender,
+                "language": language,
                 "file": filepath,
             }
         )
