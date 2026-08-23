@@ -110,6 +110,8 @@ class Dj:
         """Speak a word"""
         # Only allow safe characters: letters, digits, underscore, dash
         language_sanitized = re.sub(r'[^\w\-]', '', language)
+        word_sanitized = re.sub(r"[^\w\-]", "", word)
+        gender_sanitized = re.sub(r"[^\w\-]", "", gender)
         sampleset = SampleSet(word, TTS, self.speech_samples_path)
         existing_samples = sampleset.list(language=language_sanitized, gender=gender)
         if len(existing_samples) > 0:
@@ -144,7 +146,13 @@ class Dj:
         response = client.synthesize_speech(
             input=synthesis_input, voice=voice, audio_config=audio_config
         )
-        filepath = word_dir + "/" + word + "_" + language_sanitized + "_" + gender + ".wav"
+        filename = (
+            word_sanitized + "_" + language_sanitized + "_" + gender_sanitized + ".wav"
+        )
+        base_dir = os.path.realpath(word_dir)
+        filepath = os.path.realpath(os.path.join(base_dir, filename))
+        if os.path.commonpath([base_dir, filepath]) != base_dir:
+            raise ValueError("Unsafe output path")
         with open(filepath, "wb") as out:
             out.write(response.audio_content)
         sound = Sound(
